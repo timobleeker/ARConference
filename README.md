@@ -3,7 +3,9 @@ ARConference
 
 My thesis project.
 Requirements:
+
 openFrameworks v0073 (or up)
+
 ofxOsc
 
 This project uses spatial audio to aid in orientation in 3D space.
