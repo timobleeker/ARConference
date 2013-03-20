@@ -4,11 +4,16 @@ SoundBox * listener = new SoundBox();
 //--------------------------------------------------------------
 void testApp::setup(){
 	
+	//translate so the center of the screen is 0,0 before doing anything else
+	ofTranslate(ofGetScreenWidth()/2, ofGetScreenHeight()/2, 0);
+
 	glEnable(GL_DEPTH_TEST);
 	ofEnableAlphaBlending();
 	ofSetSmoothLighting(true);
+	ofEnableLighting();
 
 	user_height = 180;
+	box_distance = 400;
 	pan = 0;
 	tilt = 0;
 	roll = 0;
@@ -25,9 +30,6 @@ void testApp::setup(){
 	listener_position.set(0, 0, 0);
 	sound_files.push_back("birds.wav");
 	sound_files.push_back("organ.wav");
-
-	//translate so the center of the screen is 0,0 before doing anything else
-	ofTranslate(ofGetScreenWidth()/2, ofGetScreenHeight()/2, 0);
 
 	//set up camera
 	cam.setPosition(ofVec3f(0,0,0));
@@ -56,8 +58,7 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
-	ofEnableLighting();
-	
+		
 	cam.begin();
 	
 	ofRotateX(tilt);
@@ -74,7 +75,6 @@ void testApp::draw(){
 	}
 
 	cam.end();
-	ofDisableLighting();
 }
 
 //--------------------------------------------------------------
@@ -101,11 +101,15 @@ void testApp::keyPressed(int key){
 			roll--;
 			break;
 		case OF_KEY_UP:
-			//add a box
+			if (soundboxes.size() < sound_files.size())
 			addSoundBox();
 			break;
 		case OF_KEY_DOWN:
 			rotateToDefault();
+			break;
+		case OF_KEY_RIGHT:
+			if (soundboxes.size() > 0)
+				removeSoundBox();
 			break;
 	}
 		
@@ -155,25 +159,39 @@ void testApp::dragEvent(ofDragInfo dragInfo){
 void testApp::addSoundBox(){
 		
 	//Comment this out when using UDP
-	int y; 
+	int rotation; 
 	cout << "Enter a rotation (0-360): ";
-	cin >> y;
-	box_rotation.set(0, y, 0);
+	cin >> rotation;
+	box_rotation.set(0, rotation, 0);
 	//-------------------------------
 
-	box_loc.set(200*sin(ofDegToRad(y)), 0, -200*cos(ofDegToRad(y))); 
+	box_loc.set(box_distance*sin(ofDegToRad(rotation)), -100, -box_distance*cos(ofDegToRad(rotation))); 
 	box_color.set(ofRandom(0,255), ofRandom(0,255), ofRandom(0,255));
 	
 	SoundBox * box = new SoundBox(box_loc, box_rotation, box_color);
-	
-	
+
 	box->loadSound(ofToDataPath(sound_files[soundboxes.size()]));
-	box->setVolume(1);
+	box->setVolume(1); //I don't want to hear birds when working on other things
 	box->setMultiPlay(true);
 	box->updateSound(box_loc, box_vel);
 	box->play();
 	soundboxes.push_back(box);
 	cout << soundboxes.size() << "    " << sound_files.size() << endl;
+}
+//--------------------------------------------------------------
+void testApp::removeSoundBox(){
+	int n;
+	cout << "Enter the box to remove:";
+	cin >> n;
+	if (n < soundboxes.size()){
+		soundboxes.erase(soundboxes.begin() + n);
+		//add the sound file at the back of the vector and remove it from the original location.
+		sound_files.push_back(sound_files[n]);
+		sound_files.erase(sound_files.begin() + n);
+		//do I need a destructor?
+	} else {
+		cout << "specified box does not exist" << endl;
+	}
 }
 
 //--------------------------------------------------------------
@@ -195,22 +213,25 @@ void testApp::drawGrid(){
 
 //--------------------------------------------------------------
 void testApp::drawCursor(){
+	//only draw the cursor when it makes sense
 	if(tilt > 5 && tilt < 150){
-	ofEnableAlphaBlending();
-	float z_translation = -user_height*tan(ofDegToRad(90-tilt));
-	cout << z_translation << "    " << tilt << "      " << ofMap(tilt, 0, 10, 0, 255) << endl;
-	//draw cursor circle
-	ofPushMatrix();
-		ofTranslate(0,-user_height, z_translation);
-		ofRotateX(90);
-		ofSetColor(255,0,0, 255);
-		if(tilt < 10) ofSetColor(255, 0, 0, ofMap(tilt, 5, 10, 0, 255));
-		ofCircle(0,0,100);
-	ofPopMatrix();
-	ofDisableAlphaBlending();
+		
+		cursor_material.begin();
+		ofEnableAlphaBlending();
+		float z_translation = -user_height*tan(ofDegToRad(90-tilt));
+		ofPushMatrix();
+			ofTranslate(0,-user_height, z_translation);
+			ofRotateX(90);
+			ofSetColor(255,0,0, 255);
+			if(tilt < 10) ofSetColor(255, 0, 0, ofMap(tilt, 5, 10, 0, 255));
+			ofCircle(0,0,100);
+		ofPopMatrix();
+		ofDisableAlphaBlending();
+		cursor_material.end();
 	}
 }
 
+//--------------------------------------------------------------
 void testApp::rotateToDefault() {
 	
 	ofRotateY(-pan);
@@ -222,6 +243,7 @@ void testApp::rotateToDefault() {
 	pan = 0;
 }
 
+//--------------------------------------------------------------
 void testApp::getUDPMessages(){
 		
 	// check for waiting messages
@@ -237,8 +259,9 @@ void testApp::getUDPMessages(){
 
 		} else if(message.getAddress() == "Place" && message.getArgAsInt32(0) == 1){
 			addSoundBox();
+		} else if(message.getAddress() == "Remove" && message.getArgAsInt32(0) == 1){
+			removeSoundBox();
 		}
-
 
 
 		/*

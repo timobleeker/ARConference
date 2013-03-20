@@ -40,18 +40,22 @@ SoundBox::SoundBox(ofVec3f box_location, ofVec3f box_rotation, ofColor box_color
 }
 
 void SoundBox::drawSoundBox(){
-		material.setSpecularColor(_box_color);
-		material.setShininess( 64 );
-		material.begin();
+		
+		box_material.setSpecularColor(_box_color);
+		box_material.setShininess(64);
+		box_material.begin();
 		ofPushMatrix();
 		ofTranslate(_box_location);
 		ofRotateY(-_box_rotation.y);
-		
 		ofSetColor(_box_color);
 		//ofBox(40);
 		ofSphere(20);
+		ofSetColor(255,0,0);
+		ofSetLineWidth(5);
+		ofLine(ofPoint(0,0,0), ofPoint(0,-180,0));
+		ofSetLineWidth(1);
 		ofPopMatrix();
-		material.end();
+		box_material.end();
 }
 
 

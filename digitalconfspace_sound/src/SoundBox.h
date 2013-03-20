@@ -9,7 +9,7 @@ class SoundBox: public ofFmodSoundPlayer {
     
 	ofVec3f _box_location, _box_rotation, _box_velocity;
 	ofColor _box_color;
-	ofMaterial material;
+	ofMaterial box_material;
 	FMOD_VECTOR sound_position, sound_velocity;
 	FMOD_VECTOR listener_velocity, listener_up, listener_forward, listener_position;
 

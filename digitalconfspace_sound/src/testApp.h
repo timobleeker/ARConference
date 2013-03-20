@@ -35,8 +35,9 @@ class testApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
-
+		
 		int user_height;
+		int box_distance;
 		vector<string> sound_files;
 
 		void drawGrid();
@@ -44,15 +45,17 @@ class testApp : public ofBaseApp{
 
 		void getUDPMessages();
 		void addSoundBox();
+		void removeSoundBox();
 
 		ofCamera cam;
+		float pan;
+		float tilt;
+		float roll;
+		void rotateToDefault();
+
 		ofLight pointLight;
 		ofColor light_color;
-
-		ofVec3f axis;  
-		float angle; 
- 
-		void rotateToDefault();
+		ofMaterial cursor_material;
 
 		ofxOscReceiver receiver;
 				
@@ -60,11 +63,8 @@ class testApp : public ofBaseApp{
 		SoundBox listener;
 
 		ofVec3f box_loc, box_vel, box_rotation;
-		ofColor box_color;
-
 		ofVec3f listener_position, listener_velocity, listener_forward, listener_up;
+		ofColor box_color;
 		
-		float pan;
-		float tilt;
-		float roll;
+		
 };
