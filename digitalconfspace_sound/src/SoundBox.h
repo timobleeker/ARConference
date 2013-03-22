@@ -27,4 +27,6 @@ class SoundBox: public ofFmodSoundPlayer {
 	void updateListener(ofVec3f position, ofVec3f velocity, ofVec3f forward, ofVec3f up);
 	void update();
 	void drawSoundBox();	
+	ofVec3f getBoxLocation();
+	ofVec3f getBoxRotation();
 };

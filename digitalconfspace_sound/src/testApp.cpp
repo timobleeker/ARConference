@@ -1,9 +1,25 @@
 #include "testApp.h"
 
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__)
+#include <conio.h>
+#endif
+
+#define ESC 0X1B
+#define VER "1.0.7"
+
+ISD_TRACKER_HANDLE    handle;
+ISD_TRACKER_INFO_TYPE    tracker;
+
 SoundBox * listener = new SoundBox();
 //--------------------------------------------------------------
 void testApp::setup(){
 	
+	//set up tracker
+	handle = ISD_OpenTracker((Hwnd)NULL, 0, FALSE, FALSE );
+	if ( handle > 0 )
+		printf( "\n  Az El Rl \n" );
+	else
+		printf( "Tracker not found. Press any key to exit" );
 	//translate so the center of the screen is 0,0 before doing anything else
 	ofTranslate(ofGetScreenWidth()/2, ofGetScreenHeight()/2, 0);
 
@@ -42,7 +58,8 @@ void testApp::setup(){
 
 //--------------------------------------------------------------
 void testApp::update(){
-		
+	
+	updateTracker();
 	getUDPMessages();
 	
 	listener_forward.set(-sin(ofDegToRad(pan)), 0, cos(ofDegToRad(pan)));
@@ -50,6 +67,16 @@ void testApp::update(){
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
 		if(!(*box)->getIsPlaying())
 			(*box)->play();
+		
+		float y_rot = (*box)->getBoxRotation().y;
+		float z_loc = (*box)->getBoxLocation().z;
+			if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z > -box_distance - 50 && cursor_z < -box_distance + 50){
+				ofSetColor(0,255,0, 255);
+				cout << "hit" << endl;
+				break;
+			} else { 
+				ofSetColor(255,0,0, 255);
+			}
 	}
 
 	if(soundboxes.size() > 0)
@@ -82,7 +109,7 @@ void testApp::keyPressed(int key){
 
 	switch (key)
 	{
-		case WASD_LEFT:
+		/*case WASD_LEFT:
 			pan--;
 			break;
 		case WASD_RIGHT:
@@ -100,6 +127,7 @@ void testApp::keyPressed(int key){
 		case WASD_ROLL_RIGHT:
 			roll--;
 			break;
+			*/
 		case OF_KEY_UP:
 			if (soundboxes.size() < sound_files.size())
 			addSoundBox();
@@ -165,7 +193,7 @@ void testApp::addSoundBox(){
 	box_rotation.set(0, rotation, 0);
 	//-------------------------------
 
-	box_loc.set(box_distance*sin(ofDegToRad(rotation)), -100, -box_distance*cos(ofDegToRad(rotation))); 
+	box_loc.set(box_distance*sin(ofDegToRad(rotation)), 0, -box_distance*cos(ofDegToRad(rotation))); 
 	box_color.set(ofRandom(0,255), ofRandom(0,255), ofRandom(0,255));
 	
 	SoundBox * box = new SoundBox(box_loc, box_rotation, box_color);
@@ -176,7 +204,6 @@ void testApp::addSoundBox(){
 	box->updateSound(box_loc, box_vel);
 	box->play();
 	soundboxes.push_back(box);
-	cout << soundboxes.size() << "    " << sound_files.size() << endl;
 }
 //--------------------------------------------------------------
 void testApp::removeSoundBox(){
@@ -213,18 +240,19 @@ void testApp::drawGrid(){
 
 //--------------------------------------------------------------
 void testApp::drawCursor(){
-	//only draw the cursor when it makes sense
+	//only draw the cursor when it's not too far away.
 	if(tilt > 5 && tilt < 150){
-		
+		cursor_z = -user_height*tan(ofDegToRad(90-tilt));
+				
 		cursor_material.begin();
 		ofEnableAlphaBlending();
-		float z_translation = -user_height*tan(ofDegToRad(90-tilt));
+		
 		ofPushMatrix();
-			ofTranslate(0,-user_height, z_translation);
+			ofTranslate(0,-user_height, cursor_z);
 			ofRotateX(90);
-			ofSetColor(255,0,0, 255);
+			
 			if(tilt < 10) ofSetColor(255, 0, 0, ofMap(tilt, 5, 10, 0, 255));
-			ofCircle(0,0,100);
+			ofCircle(0,0,50);
 		ofPopMatrix();
 		ofDisableAlphaBlending();
 		cursor_material.end();
@@ -241,6 +269,23 @@ void testApp::rotateToDefault() {
 	tilt = 0;
 	roll = 0;
 	pan = 0;
+}
+
+//--------------------------------------------------------------
+void testApp::updateTracker(){
+	ISD_TRACKING_DATA_TYPE    data;
+
+	if ( handle > 0 ) {
+	ISD_GetTrackingData( handle, &data );
+	//printf( "%7.2f %7.2f %7.2f  ",
+	pan = data.Station[0].Euler[0];
+	tilt = -data.Station[0].Euler[1];
+	roll = data.Station[0].Euler[2];
+	//ISD_GetCommInfo( handle, &tracker );
+	//printf( "%5.2f Kb/s %d Rec/s \r",
+//	tracker.KBitsPerSec, tracker.RecordsPerSec );
+	fflush(0);
+}
 }
 
 //--------------------------------------------------------------

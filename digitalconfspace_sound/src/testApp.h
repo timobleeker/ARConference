@@ -1,9 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-
+#include <stdio.h>
 //Include Addons----------------------------------------------------------------
 #include "ofxOsc.h"
+#include "isense.h"
 
 //Include Class Headers---------------------------------------------------------
 #include "SoundBox.h"
@@ -38,11 +39,13 @@ class testApp : public ofBaseApp{
 		
 		int user_height;
 		int box_distance;
+		float cursor_z;
 		vector<string> sound_files;
 
 		void drawGrid();
 		void drawCursor();
 
+		void updateTracker();
 		void getUDPMessages();
 		void addSoundBox();
 		void removeSoundBox();

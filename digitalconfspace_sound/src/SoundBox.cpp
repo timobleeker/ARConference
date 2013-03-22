@@ -58,6 +58,13 @@ void SoundBox::drawSoundBox(){
 		box_material.end();
 }
 
+ofVec3f SoundBox::getBoxLocation(){
+	return _box_location;
+}
+
+ofVec3f SoundBox::getBoxRotation(){
+	return _box_rotation;
+}
 
 void SoundBox::initializeFmod(){
 
