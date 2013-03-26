@@ -20,6 +20,7 @@ void testApp::setup(){
 		printf( "\n  Az El Rl \n" );
 	else
 		printf( "Tracker not found. Press any key to exit" );
+
 	//translate so the center of the screen is 0,0 before doing anything else
 	ofTranslate(ofGetScreenWidth()/2, ofGetScreenHeight()/2, 0);
 
@@ -30,6 +31,7 @@ void testApp::setup(){
 
 	user_height = 180;
 	box_distance = 400;
+	selected = -1;
 	pan = 0;
 	tilt = 0;
 	roll = 0;
@@ -70,13 +72,12 @@ void testApp::update(){
 		
 		float y_rot = (*box)->getBoxRotation().y;
 		float z_loc = (*box)->getBoxLocation().z;
-			if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z > -box_distance - 50 && cursor_z < -box_distance + 50){
-				ofSetColor(0,255,0, 255);
-				cout << "hit" << endl;
-				break;
-			} else { 
-				ofSetColor(255,0,0, 255);
-			}
+		if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
+			ofSetColor(0,255,0, 255);
+			break;
+		} else { 
+			ofSetColor(255,0,0, 255);
+		}
 	}
 
 	if(soundboxes.size() > 0)
@@ -109,7 +110,7 @@ void testApp::keyPressed(int key){
 
 	switch (key)
 	{
-		/*case WASD_LEFT:
+		case WASD_LEFT:
 			pan--;
 			break;
 		case WASD_RIGHT:
@@ -127,17 +128,24 @@ void testApp::keyPressed(int key){
 		case WASD_ROLL_RIGHT:
 			roll--;
 			break;
-			*/
+			
 		case OF_KEY_UP:
 			if (soundboxes.size() < sound_files.size())
 			addSoundBox();
 			break;
 		case OF_KEY_DOWN:
-			rotateToDefault();
+			//rotateToDefault();
+			cout << getSelected() << endl;
 			break;
 		case OF_KEY_RIGHT:
 			if (soundboxes.size() > 0)
 				removeSoundBox();
+			break;
+		case 'z':
+			selectSoundBox();
+			break;
+		case 'x':
+			positionSoundBox();
 			break;
 	}
 		
@@ -188,28 +196,36 @@ void testApp::addSoundBox(){
 		
 	//Comment this out when using UDP
 	int rotation; 
-	cout << "Enter a rotation (0-360): ";
-	cin >> rotation;
+	//cout << "Enter a rotation (0-360): ";
+	//cin >> rotation;
+	rotation = pan;
 	box_rotation.set(0, rotation, 0);
 	//-------------------------------
-
-	box_loc.set(box_distance*sin(ofDegToRad(rotation)), 0, -box_distance*cos(ofDegToRad(rotation))); 
+	box_distance = -cursor_z;
+	box_loc.set(box_distance*sin(ofDegToRad(box_rotation.y)), 0, -box_distance*cos(ofDegToRad(box_rotation.y))); 
 	box_color.set(ofRandom(0,255), ofRandom(0,255), ofRandom(0,255));
 	
 	SoundBox * box = new SoundBox(box_loc, box_rotation, box_color);
-
+	
 	box->loadSound(ofToDataPath(sound_files[soundboxes.size()]));
-	box->setVolume(1); //I don't want to hear birds when working on other things
+	box->setVolume(1);
 	box->setMultiPlay(true);
 	box->updateSound(box_loc, box_vel);
 	box->play();
 	soundboxes.push_back(box);
 }
+
 //--------------------------------------------------------------
 void testApp::removeSoundBox(){
+	
 	int n;
-	cout << "Enter the box to remove:";
-	cin >> n;
+	//Comment this out when using UDP
+	//cout << "Enter the box to remove:";
+	//cin >> n;
+	//-------------------------------
+
+	n = getSelected();
+
 	if (n < soundboxes.size()){
 		soundboxes.erase(soundboxes.begin() + n);
 		//add the sound file at the back of the vector and remove it from the original location.
@@ -219,6 +235,19 @@ void testApp::removeSoundBox(){
 	} else {
 		cout << "specified box does not exist" << endl;
 	}
+}
+
+//--------------------------------------------------------------
+void testApp::positionSoundBox(){
+	box_distance = -cursor_z;
+	box_rotation.set(0, pan, 0);
+	box_loc.set(box_distance*sin(ofDegToRad(box_rotation.y)), 0, -box_distance*cos(ofDegToRad(box_rotation.y)));
+	if (selected >= 0){
+		soundboxes[selected]->setNewLocation(box_loc, box_rotation);
+		soundboxes[selected]->updateSound(box_loc, box_vel);
+		soundboxes[selected]->play();
+	}
+	selected = -1;
 }
 
 //--------------------------------------------------------------
@@ -257,6 +286,26 @@ void testApp::drawCursor(){
 		ofDisableAlphaBlending();
 		cursor_material.end();
 	}
+}
+
+//--------------------------------------------------------------
+int testApp::getSelected(){
+	signed int n = -1;
+	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){		
+		n++;
+		float y_rot = (*box)->getBoxRotation().y;
+		float z_loc = (*box)->getBoxLocation().z;
+		if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
+			return n;
+		}
+	}
+	return -1;
+}
+
+//--------------------------------------------------------------
+void testApp::selectSoundBox(){
+	selected = getSelected();
+	cout << "selected box #: " << selected << endl;
 }
 
 //--------------------------------------------------------------
@@ -300,7 +349,8 @@ void testApp::getUDPMessages(){
 		if(message.getAddress() == "Location"){
 			float mapped_value = ofMap(message.getArgAsFloat(0), 0, 1, -1, 1);
 			cout << mapped_value << endl;
-			box_rotation.set(-mapped_value*180, 0, 0);
+			box_rotation.set(0, -mapped_value*180, 0);
+			
 
 		} else if(message.getAddress() == "Place" && message.getArgAsInt32(0) == 1){
 			addSoundBox();

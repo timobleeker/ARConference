@@ -39,16 +39,20 @@ class testApp : public ofBaseApp{
 		
 		int user_height;
 		int box_distance;
+		int selected;
 		float cursor_z;
 		vector<string> sound_files;
 
 		void drawGrid();
 		void drawCursor();
+		int getSelected();
+		void selectSoundBox();
 
 		void updateTracker();
 		void getUDPMessages();
 		void addSoundBox();
 		void removeSoundBox();
+		void positionSoundBox();
 
 		ofCamera cam;
 		float pan;

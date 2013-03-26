@@ -48,14 +48,23 @@ void SoundBox::drawSoundBox(){
 		ofTranslate(_box_location);
 		ofRotateY(-_box_rotation.y);
 		ofSetColor(_box_color);
-		//ofBox(40);
-		ofSphere(20);
+		ofBox(40);
+		//ofSphere(20);
 		ofSetColor(255,0,0);
 		ofSetLineWidth(5);
 		ofLine(ofPoint(0,0,0), ofPoint(0,-180,0));
 		ofSetLineWidth(1);
 		ofPopMatrix();
 		box_material.end();
+}
+
+void SoundBox::setNewLocation(ofVec3f box_location,  ofVec3f box_rotation){
+	_box_location = box_location;
+	_box_rotation = box_rotation;
+	sound_position.x = _box_location.x;
+	sound_position.y = _box_location.y;
+	sound_position.z = _box_location.z;
+
 }
 
 ofVec3f SoundBox::getBoxLocation(){
