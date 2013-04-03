@@ -21,6 +21,7 @@ class SoundBox: public ofFmodSoundPlayer {
 	static void initializeFmod();
 	static void closeFmod();
 	bool loadSound(string fileName, bool stream = false);
+	void loadVideo(string fileName);
 	void play();
 	void stop(); 
 	void updateSound(ofVec3f box_location, ofVec3f box_velocity);
@@ -30,4 +31,10 @@ class SoundBox: public ofFmodSoundPlayer {
 	void setNewLocation(ofVec3f box_location,  ofVec3f box_rotation);
 	ofVec3f getBoxLocation();
 	ofVec3f getBoxRotation();
+
+	ofTexture testTex;
+	int w, h;
+//	unsigned char * grayPixels;
+	ofVideoPlayer player;
+	//ofImage img;
 };

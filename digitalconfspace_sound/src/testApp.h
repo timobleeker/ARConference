@@ -40,8 +40,10 @@ class testApp : public ofBaseApp{
 		int user_height;
 		int box_distance;
 		int selected;
+		bool moving;
 		float cursor_z;
 		vector<string> sound_files;
+		vector<string> video_files;
 
 		void drawGrid();
 		void drawCursor();
@@ -72,6 +74,7 @@ class testApp : public ofBaseApp{
 		ofVec3f box_loc, box_vel, box_rotation;
 		ofVec3f listener_position, listener_velocity, listener_forward, listener_up;
 		ofColor box_color;
-		
-		
+
+		//ofVideoPlayer player;
+		ofTexture vidtex;
 };

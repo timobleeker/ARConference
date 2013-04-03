@@ -36,19 +36,39 @@ SoundBox::SoundBox(ofVec3f box_location, ofVec3f box_rotation, ofColor box_color
 	sound_velocity.y = 0;
 	sound_velocity.z = 0;
 
-	//initializeFmod();
+	//player.loadMovie("me_talking.mov");
+	//player.play();
+
+	/*grayPixels = new unsigned char [w*h];
+
+	for(int i = 0; i < w*h; i++){
+		grayPixels[i] = (unsigned char)(ofRandomuf() *255);
+	}
+	testTex.loadData(grayPixels, w, h, GL_LUMINANCE); */
 }
 
 void SoundBox::drawSoundBox(){
 		
+		/*for (int i = 0; i < w; i++){
+			for (int j = 0; j < h; j++){ 
+				grayPixels[j*w+i] = (unsigned char)(ofRandomuf() * 255);
+			}
+		}	
+		testTex.loadData(grayPixels, w,h, GL_LUMINANCE); */
+
 		box_material.setSpecularColor(_box_color);
 		box_material.setShininess(64);
 		box_material.begin();
 		ofPushMatrix();
 		ofTranslate(_box_location);
 		ofRotateY(-_box_rotation.y);
+		
 		ofSetColor(_box_color);
-		ofBox(40);
+		
+		player.update();
+		testTex.draw(-w/2,h/2,0, w,-h);
+		
+		//ofBox(40);
 		//ofSphere(20);
 		ofSetColor(255,0,0);
 		ofSetLineWidth(5);
@@ -56,6 +76,7 @@ void SoundBox::drawSoundBox(){
 		ofSetLineWidth(1);
 		ofPopMatrix();
 		box_material.end();
+		
 }
 
 void SoundBox::setNewLocation(ofVec3f box_location,  ofVec3f box_rotation){
@@ -89,6 +110,17 @@ void SoundBox::initializeFmod(){
 	
 }
 
+void SoundBox::loadVideo(string fileName){
+	player.loadMovie(fileName);
+
+	w = 110;
+	h = 160;
+
+	testTex.allocate(w,h,GL_RGB);
+	testTex = player.getTextureReference();
+	testTex.bind();
+}
+
 bool SoundBox::loadSound(string fileName, bool stream)
 {
     result = FMOD_System_CreateSound(sys, ofToDataPath(fileName).c_str(), FMOD_3D, NULL, &sound);
@@ -111,6 +143,8 @@ void SoundBox::play(){
     FMOD_Channel_Set3DAttributes(channel, &sound_position, &sound_velocity);
     FMOD_Channel_GetFrequency(channel, &internalFreq);
     FMOD_Channel_SetVolume(channel,volume);
+	if(!player.isPlaying())
+		player.play();
 }
 
 void SoundBox::stop(){

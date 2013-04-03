@@ -13,7 +13,7 @@ ISD_TRACKER_INFO_TYPE    tracker;
 SoundBox * listener = new SoundBox();
 //--------------------------------------------------------------
 void testApp::setup(){
-	
+
 	//set up tracker
 	handle = ISD_OpenTracker((Hwnd)NULL, 0, FALSE, FALSE );
 	if ( handle > 0 )
@@ -37,6 +37,7 @@ void testApp::setup(){
 	roll = 0;
 	ofBackground(0);
 	light_color.set(255,255,255);
+	moving = false;
 
 	pointLight.setPosition(0,0,0);
 	pointLight.setDiffuseColor(light_color);
@@ -46,8 +47,12 @@ void testApp::setup(){
 	listener_up.set(0, 1, 0);
 	listener_forward.set(0, 0, 1);
 	listener_position.set(0, 0, 0);
+	
 	sound_files.push_back("birds.wav");
 	sound_files.push_back("organ.wav");
+	
+	video_files.push_back("me_talking.mov");
+	video_files.push_back("james.mov");
 
 	//set up camera
 	cam.setPosition(ofVec3f(0,0,0));
@@ -65,7 +70,17 @@ void testApp::update(){
 	getUDPMessages();
 	
 	listener_forward.set(-sin(ofDegToRad(pan)), 0, cos(ofDegToRad(pan)));
+	listener_up.set(0, cos(ofDegToRad(pan)), sin(ofDegToRad(pan)));
+	cout << "y: "<< cos(ofDegToRad(tilt)) << "z: "<< sin(ofDegToRad(tilt)) << endl;
 	listener.updateListener(listener_position, listener_velocity, listener_forward, listener_up);
+
+		if (moving){
+			positionSoundBox();
+			soundboxes[selected]->setNewLocation(box_loc, box_rotation);
+			soundboxes[selected]->updateSound(box_loc, box_vel);
+		//	soundboxes[selected]->play();
+		}
+
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
 		if(!(*box)->getIsPlaying())
 			(*box)->play();
@@ -88,14 +103,13 @@ void testApp::update(){
 void testApp::draw(){
 		
 	cam.begin();
-	
+
 	ofRotateX(tilt);
 	ofRotateZ(roll);
 	drawCursor();
 	ofRotateY(pan);
 	pointLight.enable();
 	drawGrid();
-
 	//create all boxes
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
 		
@@ -145,7 +159,14 @@ void testApp::keyPressed(int key){
 			selectSoundBox();
 			break;
 		case 'x':
-			positionSoundBox();
+			if(selected >= 0){
+				if(moving == false){
+					moving = true;
+				} else{
+					moving = false;
+					selected = -1;
+				}
+			}
 			break;
 	}
 		
@@ -207,6 +228,7 @@ void testApp::addSoundBox(){
 	
 	SoundBox * box = new SoundBox(box_loc, box_rotation, box_color);
 	
+	box->loadVideo(ofToDataPath(video_files[soundboxes.size()]));
 	box->loadSound(ofToDataPath(sound_files[soundboxes.size()]));
 	box->setVolume(1);
 	box->setMultiPlay(true);
@@ -231,6 +253,8 @@ void testApp::removeSoundBox(){
 		//add the sound file at the back of the vector and remove it from the original location.
 		sound_files.push_back(sound_files[n]);
 		sound_files.erase(sound_files.begin() + n);
+		video_files.push_back(video_files[n]);
+		video_files.erase(video_files.begin() + n);
 		//do I need a destructor?
 	} else {
 		cout << "specified box does not exist" << endl;
@@ -242,12 +266,8 @@ void testApp::positionSoundBox(){
 	box_distance = -cursor_z;
 	box_rotation.set(0, pan, 0);
 	box_loc.set(box_distance*sin(ofDegToRad(box_rotation.y)), 0, -box_distance*cos(ofDegToRad(box_rotation.y)));
-	if (selected >= 0){
-		soundboxes[selected]->setNewLocation(box_loc, box_rotation);
-		soundboxes[selected]->updateSound(box_loc, box_vel);
-		soundboxes[selected]->play();
-	}
-	selected = -1;
+
+//	selected = -1;
 }
 
 //--------------------------------------------------------------
