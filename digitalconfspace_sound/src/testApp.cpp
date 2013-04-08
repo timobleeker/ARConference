@@ -15,11 +15,7 @@ SoundBox * listener = new SoundBox();
 void testApp::setup(){
 
 	//set up tracker
-	handle = ISD_OpenTracker((Hwnd)NULL, 0, FALSE, FALSE );
-	if ( handle > 0 )
-		printf( "\n  Az El Rl \n" );
-	else
-		printf( "Tracker not found. Press any key to exit" );
+	setupTracker();
 
 	//translate so the center of the screen is 0,0 before doing anything else
 	ofTranslate(ofGetScreenWidth()/2, ofGetScreenHeight()/2, 0);
@@ -38,6 +34,10 @@ void testApp::setup(){
 	ofBackground(0);
 	light_color.set(255,255,255);
 	moving = false;
+	ask_for_file = false;
+	wait_for_file = true;
+	file_received = false;
+	spin = 0;
 
 	pointLight.setPosition(0,0,0);
 	pointLight.setDiffuseColor(light_color);
@@ -61,25 +61,29 @@ void testApp::setup(){
 
 	//set up listening port for UDP messages
 	receiver.setup(PORT);
+
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
-	
+
+	spin += .2;
 	updateTracker();
-	getUDPMessages();
+
 	
+	if(ask_for_file) askFile();
+	if(wait_for_file) awaitFile();
+
 	listener_forward.set(-sin(ofDegToRad(pan)), 0, cos(ofDegToRad(pan)));
 	listener_up.set(0, cos(ofDegToRad(pan)), sin(ofDegToRad(pan)));
-	cout << "y: "<< cos(ofDegToRad(tilt)) << "z: "<< sin(ofDegToRad(tilt)) << endl;
 	listener.updateListener(listener_position, listener_velocity, listener_forward, listener_up);
 
-		if (moving){
-			positionSoundBox();
-			soundboxes[selected]->setNewLocation(box_loc, box_rotation);
-			soundboxes[selected]->updateSound(box_loc, box_vel);
+	if (moving){
+		positionSoundBox();
+		soundboxes[selected]->setNewLocation(box_loc, box_rotation);
+		soundboxes[selected]->updateSound(box_loc, box_vel);
 		//	soundboxes[selected]->play();
-		}
+	}
 
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
 		if(!(*box)->getIsPlaying())
@@ -88,10 +92,13 @@ void testApp::update(){
 		float y_rot = (*box)->getBoxRotation().y;
 		float z_loc = (*box)->getBoxLocation().z;
 		if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
-			ofSetColor(0,255,0, 255);
+			cursor_material.setEmissiveColor(ofColor(51,181,229,255));
+			(*box)->setSelected(true);
+			selectSoundBox();
 			break;
 		} else { 
-			ofSetColor(255,0,0, 255);
+			cursor_material.setEmissiveColor(ofColor(255,68,68,255));
+			(*box)->setSelected(false);
 		}
 	}
 
@@ -101,20 +108,22 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
+
 		
 	cam.begin();
-
+	pointLight.enable();
 	ofRotateX(tilt);
 	ofRotateZ(roll);
 	drawCursor();
 	ofRotateY(pan);
-	pointLight.enable();
 	drawGrid();
 	//create all boxes
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
 		
 		(*box)->drawSoundBox();	
 	}
+	if(file_received == true) drawFile();
+	
 
 	cam.end();
 }
@@ -215,10 +224,11 @@ void testApp::dragEvent(ofDragInfo dragInfo){
 //--------------------------------------------------------------
 void testApp::addSoundBox(){
 		
-	//Comment this out when using UDP
 	int rotation; 
+	//Comment this out when using UDP
 	//cout << "Enter a rotation (0-360): ";
 	//cin >> rotation;
+
 	rotation = pan;
 	box_rotation.set(0, rotation, 0);
 	//-------------------------------
@@ -234,6 +244,7 @@ void testApp::addSoundBox(){
 	box->setMultiPlay(true);
 	box->updateSound(box_loc, box_vel);
 	box->play();
+	box->setSelected(true);
 	soundboxes.push_back(box);
 }
 
@@ -255,6 +266,7 @@ void testApp::removeSoundBox(){
 		sound_files.erase(sound_files.begin() + n);
 		video_files.push_back(video_files[n]);
 		video_files.erase(video_files.begin() + n);
+		item_receiver = -1;
 		//do I need a destructor?
 	} else {
 		cout << "specified box does not exist" << endl;
@@ -294,13 +306,14 @@ void testApp::drawCursor(){
 		cursor_z = -user_height*tan(ofDegToRad(90-tilt));
 				
 		cursor_material.begin();
+		cursor_material.setEmissiveColor(ofColor(255,0,0,255));
 		ofEnableAlphaBlending();
 		
 		ofPushMatrix();
 			ofTranslate(0,-user_height, cursor_z);
 			ofRotateX(90);
 			
-			if(tilt < 10) ofSetColor(255, 0, 0, ofMap(tilt, 5, 10, 0, 255));
+			if(tilt < 10) cursor_material.setEmissiveColor(ofColor(255,0,0,ofMap(tilt, 5, 10, 0, 255)));
 			ofCircle(0,0,50);
 		ofPopMatrix();
 		ofDisableAlphaBlending();
@@ -341,6 +354,15 @@ void testApp::rotateToDefault() {
 }
 
 //--------------------------------------------------------------
+void testApp::setupTracker(){
+	handle = ISD_OpenTracker((Hwnd)NULL, 0, FALSE, FALSE );
+	if ( handle > 0 )
+		printf( "\n  Az El Rl \n" );
+	else
+		printf( "Tracker not found. Press any key to exit" );
+}
+
+//--------------------------------------------------------------
 void testApp::updateTracker(){
 	ISD_TRACKING_DATA_TYPE    data;
 
@@ -358,15 +380,67 @@ void testApp::updateTracker(){
 }
 
 //--------------------------------------------------------------
+void testApp::askFile(){
+	//ask for a file. randomly select the VP that will ask and the requested object
+}
+
+//--------------------------------------------------------------
+void testApp::awaitFile(){
+	getUDPMessages();
+	//measure time waiting
+	
+}
+
+
+
+//--------------------------------------------------------------
+void testApp::drawFile(){
+	//for(auto shapefile = shapefiles.begin(); shapefile != shapefiles.end(); shapefile++){
+	if(item_receiver >= 0 && ofGetElapsedTimef() - time_object_placed < 5.0){
+			float rot = -soundboxes[item_receiver]->getBoxRotation().y;
+			float loc = -soundboxes[item_receiver]->getBoxLocation().z;
+			cout << rot << endl;
+			shapefile->drawShapeFile(spin, rot, loc / cos(ofDegToRad(rot)));	
+	} else {
+		wait_for_file = true;
+	}
+	//}
+	
+}
+
+//--------------------------------------------------------------
 void testApp::getUDPMessages(){
-		
+		target = -1;
 	// check for waiting messages
 	while(receiver.hasWaitingMessages()){
 		// get the next message
 		ofxOscMessage message;
 		receiver.getNextMessage(&message);
 
-		if(message.getAddress() == "Location"){
+		if(message.getAddress() == "object"){
+			
+			shape_color = message.getArgAsString(0);
+			shape = message.getArgAsString(1);
+			time_object_placed = ofGetElapsedTimef();
+			if(message.getNumArgs() == 2){
+				shapefile.reset(new ShapeFile(shape_color, shape));
+				//shapefiles.push_back(shapefile);
+				item_receiver = getSelected();
+			} else if(message.getNumArgs() == 3 && message.getArgAsInt32(2) <= soundboxes.size()){
+				target = message.getArgAsInt32(2);
+				shapefile.reset(new ShapeFile(shape_color, shape, target));
+				//shapefiles.push_back(shapefile);
+				
+				item_receiver = target;
+			}
+		
+		wait_for_file = false;
+		file_received = true;
+		
+		
+		}
+
+	/*	if(message.getAddress() == "Location"){
 			float mapped_value = ofMap(message.getArgAsFloat(0), 0, 1, -1, 1);
 			cout << mapped_value << endl;
 			box_rotation.set(0, -mapped_value*180, 0);
@@ -377,9 +451,6 @@ void testApp::getUDPMessages(){
 		} else if(message.getAddress() == "Remove" && message.getArgAsInt32(0) == 1){
 			removeSoundBox();
 		}
-
-
-		/*
 
 		//print out in console
 		string msg_string;
@@ -408,5 +479,7 @@ void testApp::getUDPMessages(){
 		cout << msg_string << endl;
 		*/
 	}
+
+//	cout << "shape: " << shape << " color: " << shape_color << " target: " << target << endl;
 
 }

@@ -56,17 +56,22 @@ void SoundBox::drawSoundBox(){
 		}	
 		testTex.loadData(grayPixels, w,h, GL_LUMINANCE); */
 
-		box_material.setSpecularColor(_box_color);
-		box_material.setShininess(64);
+		box_material.setSpecularColor(ofColor(51,181,229));
+		box_material.setShininess(4); 
 		box_material.begin();
 		ofPushMatrix();
 		ofTranslate(_box_location);
 		ofRotateY(-_box_rotation.y);
 		
-		ofSetColor(_box_color);
-		
+		if(is_selected){
+			ofSetColor(ofColor(51,181,229));
+		} else {
+		ofSetColor(ofColor(170,170,170));
+		}
+		ofRect(-w/2-10,h/2+10,-1, w+20,-h-20);
+		ofSetColor(ofColor(255,255,255));
 		player.update();
-		testTex.draw(-w/2,h/2,0, w,-h);
+		video_tex.draw(-w/2,h/2,0, w,-h);
 		
 		//ofBox(40);
 		//ofSphere(20);
@@ -100,7 +105,7 @@ void SoundBox::initializeFmod(){
 
     if(!bFmod3DInitialized){
         FMOD_System_Create(&sys);
-        FMOD_System_Init(sys, 32, FMOD_INIT_NORMAL, NULL);
+        FMOD_System_Init(sys, 32, FMOD_INIT_SOFTWARE_HRTF, NULL);
         //do we want just 32 channels?
         
 		FMOD_System_Set3DSettings(sys, 10.0f, 10.0f, 10.0f);
@@ -116,9 +121,10 @@ void SoundBox::loadVideo(string fileName){
 	w = 110;
 	h = 160;
 
-	testTex.allocate(w,h,GL_RGB);
-	testTex = player.getTextureReference();
-	testTex.bind();
+	video_tex.allocate(w,h,GL_RGB);
+	video_tex = player.getTextureReference();
+	video_tex.bind();
+	player.play();
 }
 
 bool SoundBox::loadSound(string fileName, bool stream)
@@ -143,8 +149,8 @@ void SoundBox::play(){
     FMOD_Channel_Set3DAttributes(channel, &sound_position, &sound_velocity);
     FMOD_Channel_GetFrequency(channel, &internalFreq);
     FMOD_Channel_SetVolume(channel,volume);
-	if(!player.isPlaying())
-		player.play();
+	//if(!player.isPlaying())
+	//	player.play();
 }
 
 void SoundBox::stop(){
@@ -191,4 +197,8 @@ void SoundBox::updateListener(ofVec3f position, ofVec3f velocity, ofVec3f forwar
 void SoundBox::update()
 {
 	FMOD_System_Update(sys);
+}
+
+void SoundBox::setSelected(bool selected){
+	is_selected = selected;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "ofMain.h"
 #include <stdio.h>
 //Include Addons----------------------------------------------------------------
@@ -8,6 +10,7 @@
 
 //Include Class Headers---------------------------------------------------------
 #include "SoundBox.h"
+#include "ShapeFile.h"
 //#include "Listener.h"
 
 //Definitions-------------------------------------------------------------------
@@ -42,6 +45,7 @@ class testApp : public ofBaseApp{
 		int selected;
 		bool moving;
 		float cursor_z;
+
 		vector<string> sound_files;
 		vector<string> video_files;
 
@@ -50,6 +54,7 @@ class testApp : public ofBaseApp{
 		int getSelected();
 		void selectSoundBox();
 
+		void setupTracker();
 		void updateTracker();
 		void getUDPMessages();
 		void addSoundBox();
@@ -75,6 +80,26 @@ class testApp : public ofBaseApp{
 		ofVec3f listener_position, listener_velocity, listener_forward, listener_up;
 		ofColor box_color;
 
-		//ofVideoPlayer player;
-		ofTexture vidtex;
+		string shape;
+		string shape_color;
+		ofColor yellow;
+		ofColor red;
+		ofColor blue;
+		int target;
+		int item_receiver;
+
+		bool ask_for_file;
+		void askFile();
+
+		bool wait_for_file;
+		void awaitFile();
+
+		bool file_received;
+		void drawFile();
+		
+		std::shared_ptr<ShapeFile> shapefile;
+		//vector<ShapeFile*> shapefiles;
+		float spin;
+
+		float time_object_placed;
 };

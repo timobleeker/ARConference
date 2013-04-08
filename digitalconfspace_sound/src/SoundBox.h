@@ -12,6 +12,7 @@ class SoundBox: public ofFmodSoundPlayer {
 	ofMaterial box_material;
 	FMOD_VECTOR sound_position, sound_velocity;
 	FMOD_VECTOR listener_velocity, listener_up, listener_forward, listener_position;
+	bool is_selected;
 
 	public:
 	
@@ -32,9 +33,11 @@ class SoundBox: public ofFmodSoundPlayer {
 	ofVec3f getBoxLocation();
 	ofVec3f getBoxRotation();
 
-	ofTexture testTex;
+	void setSelected(bool selected);
+	
+
+	ofTexture video_tex;
 	int w, h;
 //	unsigned char * grayPixels;
 	ofVideoPlayer player;
-	//ofImage img;
 };
