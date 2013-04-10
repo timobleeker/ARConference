@@ -12,7 +12,11 @@ ISD_TRACKER_INFO_TYPE    tracker;
 
 SoundBox * listener = new SoundBox();
 //--------------------------------------------------------------
-void testApp::setup(){
+testApp::testApp() : _random(125042)
+{
+}
+
+void testApp::setup(){	
 
 	//set up tracker
 	setupTracker();
@@ -35,9 +39,15 @@ void testApp::setup(){
 	light_color.set(255,255,255);
 	moving = false;
 	ask_for_file = false;
-	wait_for_file = true;
+	wait_for_file = false;;
 	file_received = false;
 	spin = 0;
+	shapes.push_back("circle");
+	shapes.push_back("square");
+	shapes.push_back("triangle");
+	shape_colors.push_back("blue");
+	shape_colors.push_back("yellow");
+	shape_colors.push_back("red");
 
 	pointLight.setPosition(0,0,0);
 	pointLight.setDiffuseColor(light_color);
@@ -47,10 +57,10 @@ void testApp::setup(){
 	listener_up.set(0, 1, 0);
 	listener_forward.set(0, 0, 1);
 	listener_position.set(0, 0, 0);
-	
+
 	sound_files.push_back("birds.wav");
 	sound_files.push_back("organ.wav");
-	
+
 	video_files.push_back("me_talking.mov");
 	video_files.push_back("james.mov");
 
@@ -70,9 +80,14 @@ void testApp::update(){
 	spin += .2;
 	updateTracker();
 
-	
+
 	if(ask_for_file) askFile();
-	if(wait_for_file) awaitFile();
+	
+	if(wait_for_file) {
+		awaitFile();
+	} else {
+		clearUDPMessages();
+	}
 
 	listener_forward.set(-sin(ofDegToRad(pan)), 0, cos(ofDegToRad(pan)));
 	listener_up.set(0, cos(ofDegToRad(pan)), sin(ofDegToRad(pan)));
@@ -88,7 +103,7 @@ void testApp::update(){
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
 		if(!(*box)->getIsPlaying())
 			(*box)->play();
-		
+
 		float y_rot = (*box)->getBoxRotation().y;
 		float z_loc = (*box)->getBoxLocation().z;
 		if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
@@ -109,7 +124,7 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
 
-		
+
 	cam.begin();
 	pointLight.enable();
 	ofRotateX(tilt);
@@ -119,11 +134,11 @@ void testApp::draw(){
 	drawGrid();
 	//create all boxes
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
-		
+
 		(*box)->drawSoundBox();	
 	}
 	if(file_received == true) drawFile();
-	
+
 
 	cam.end();
 }
@@ -133,52 +148,61 @@ void testApp::keyPressed(int key){
 
 	switch (key)
 	{
-		case WASD_LEFT:
-			pan--;
-			break;
-		case WASD_RIGHT:
-			pan++;
-			break;
-		case WASD_UP:
-			tilt++;
-			break;
-		case WASD_DOWN:
-			tilt--;
-			break;
-		case WASD_ROLL_LEFT:
-			roll++;
-			break;
-		case WASD_ROLL_RIGHT:
-			roll--;
-			break;
-			
-		case OF_KEY_UP:
-			if (soundboxes.size() < sound_files.size())
+	case WASD_LEFT:
+		pan--;
+		break;
+	case WASD_RIGHT:
+		pan++;
+		break;
+	case WASD_UP:
+		tilt++;
+		break;
+	case WASD_DOWN:
+		tilt--;
+		break;
+	case WASD_ROLL_LEFT:
+		roll++;
+		break;
+	case WASD_ROLL_RIGHT:
+		roll--;
+		break;
+
+	case OF_KEY_UP:
+		if (soundboxes.size() < sound_files.size())
 			addSoundBox();
-			break;
-		case OF_KEY_DOWN:
-			//rotateToDefault();
-			cout << getSelected() << endl;
-			break;
-		case OF_KEY_RIGHT:
-			if (soundboxes.size() > 0)
-				removeSoundBox();
-			break;
-		case 'z':
-			selectSoundBox();
-			break;
-		case 'x':
-			if(selected >= 0){
-				if(moving == false){
-					moving = true;
-				} else{
-					moving = false;
-					selected = -1;
-				}
+		break;
+	case OF_KEY_DOWN:
+		//rotateToDefault();
+		startTimer();
+		askFile();
+		break;
+	case OF_KEY_RIGHT:
+		if (soundboxes.size() > 0)
+			removeSoundBox();
+		break;
+	case 'z':
+		selectSoundBox();
+		break;
+	case 'x':
+		if(selected >= 0){
+			if(moving == false){
+				moving = true;
+			} else{
+				moving = false;
+				selected = -1;
 			}
-			break;
+		}
+		break;
+	case 'i':
+		iterations = 5;
+		startNewSession();
+		break;
+	case 'o':
+		iterations = 20;
+		startNewSession();
+		break;
 	}
-		
+
 }
 
 //--------------------------------------------------------------
@@ -188,7 +212,7 @@ void testApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void testApp::mouseMoved(int x, int y){
-	
+
 }
 
 //--------------------------------------------------------------
@@ -198,7 +222,7 @@ void testApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void testApp::mousePressed(int x, int y, int button){
-	
+
 }
 
 //--------------------------------------------------------------
@@ -223,7 +247,7 @@ void testApp::dragEvent(ofDragInfo dragInfo){
 
 //--------------------------------------------------------------
 void testApp::addSoundBox(){
-		
+
 	int rotation; 
 	//Comment this out when using UDP
 	//cout << "Enter a rotation (0-360): ";
@@ -235,9 +259,9 @@ void testApp::addSoundBox(){
 	box_distance = -cursor_z;
 	box_loc.set(box_distance*sin(ofDegToRad(box_rotation.y)), 0, -box_distance*cos(ofDegToRad(box_rotation.y))); 
 	box_color.set(ofRandom(0,255), ofRandom(0,255), ofRandom(0,255));
-	
+
 	SoundBox * box = new SoundBox(box_loc, box_rotation, box_color);
-	
+
 	box->loadVideo(ofToDataPath(video_files[soundboxes.size()]));
 	box->loadSound(ofToDataPath(sound_files[soundboxes.size()]));
 	box->setVolume(1);
@@ -250,7 +274,7 @@ void testApp::addSoundBox(){
 
 //--------------------------------------------------------------
 void testApp::removeSoundBox(){
-	
+
 	int n;
 	//Comment this out when using UDP
 	//cout << "Enter the box to remove:";
@@ -279,12 +303,12 @@ void testApp::positionSoundBox(){
 	box_rotation.set(0, pan, 0);
 	box_loc.set(box_distance*sin(ofDegToRad(box_rotation.y)), 0, -box_distance*cos(ofDegToRad(box_rotation.y)));
 
-//	selected = -1;
+	//	selected = -1;
 }
 
 //--------------------------------------------------------------
 void testApp::drawGrid(){
-	
+
 	//draw a grid on the floor
 	ofSetColor(255,255,255);
 	for(int i=-2000;i<2200;i+=100)
@@ -304,17 +328,17 @@ void testApp::drawCursor(){
 	//only draw the cursor when it's not too far away.
 	if(tilt > 5 && tilt < 150){
 		cursor_z = -user_height*tan(ofDegToRad(90-tilt));
-				
+
 		cursor_material.begin();
 		cursor_material.setEmissiveColor(ofColor(255,0,0,255));
 		ofEnableAlphaBlending();
-		
+
 		ofPushMatrix();
-			ofTranslate(0,-user_height, cursor_z);
-			ofRotateX(90);
-			
-			if(tilt < 10) cursor_material.setEmissiveColor(ofColor(255,0,0,ofMap(tilt, 5, 10, 0, 255)));
-			ofCircle(0,0,50);
+		ofTranslate(0,-user_height, cursor_z);
+		ofRotateX(90);
+
+		if(tilt < 10) cursor_material.setEmissiveColor(ofColor(255,0,0,ofMap(tilt, 5, 10, 0, 255)));
+		ofCircle(0,0,50);
 		ofPopMatrix();
 		ofDisableAlphaBlending();
 		cursor_material.end();
@@ -338,12 +362,12 @@ int testApp::getSelected(){
 //--------------------------------------------------------------
 void testApp::selectSoundBox(){
 	selected = getSelected();
-	cout << "selected box #: " << selected << endl;
+	//cout << "selected box #: " << selected << endl;
 }
 
 //--------------------------------------------------------------
 void testApp::rotateToDefault() {
-	
+
 	ofRotateY(-pan);
 	ofRotateZ(-roll);
 	ofRotateX(-tilt);
@@ -367,50 +391,111 @@ void testApp::updateTracker(){
 	ISD_TRACKING_DATA_TYPE    data;
 
 	if ( handle > 0 ) {
-	ISD_GetTrackingData( handle, &data );
-	//printf( "%7.2f %7.2f %7.2f  ",
-	pan = data.Station[0].Euler[0];
-	tilt = -data.Station[0].Euler[1];
-	roll = data.Station[0].Euler[2];
-	//ISD_GetCommInfo( handle, &tracker );
-	//printf( "%5.2f Kb/s %d Rec/s \r",
-//	tracker.KBitsPerSec, tracker.RecordsPerSec );
-	fflush(0);
-}
+		ISD_GetTrackingData( handle, &data );
+		//printf( "%7.2f %7.2f %7.2f  ",
+		pan = data.Station[0].Euler[0];
+		tilt = -data.Station[0].Euler[1];
+		roll = data.Station[0].Euler[2];
+		//ISD_GetCommInfo( handle, &tracker );
+		//printf( "%5.2f Kb/s %d Rec/s \r",
+		//	tracker.KBitsPerSec, tracker.RecordsPerSec );
+		fflush(0);
+	}
 }
 
 //--------------------------------------------------------------
 void testApp::askFile(){
-	//ask for a file. randomly select the VP that will ask and the requested object
+	ask_for_file = false;
+
+	if(iterations > 0){
+		iterations--;
+		startTimer();
+		task_tag = XML.addTag("TASK");
+
+		//ask for a file. randomly select the VP that will ask and the requested object
+		std::tr1::uniform_int_distribution<int> questioner_dist(0, soundboxes.size());
+		random_questioner = questioner_dist(_random)-1;
+
+		std::tr1::uniform_int_distribution<int> shape_dist(0, shapes.size()-1);
+		switch (shape_dist(_random))
+		{
+		case 0:
+			random_shape = "circle";
+			break;
+		case 1:
+			random_shape = "triangle";
+			break;
+		case 2:
+			random_shape = "square";
+			break;
+		}
+		std::tr1::uniform_int_distribution<int> color_dist(0, shape_colors.size()-1);
+		switch (color_dist(_random))
+		{
+		case 0:
+			random_color = "blue";
+			break;
+		case 1:
+			random_color = "yellow";
+			break;
+		case 2:
+			random_color = "red";
+			break;
+		}
+		cout << "random_questioner: " << random_questioner << "  random_shape: " << random_shape << "  random_color: " << random_color << endl;
+
+		wait_for_file = true;
+		XML.pushTag("TASK", task_tag);
+		int _tag_num = XML.addTag("Asked");
+		sendToXML("Asked", random_color + " " + random_shape, _tag_num);
+	} else {
+		endSession();
+	}
 }
 
 //--------------------------------------------------------------
 void testApp::awaitFile(){
 	getUDPMessages();
-	//measure time waiting
-	
+	//start timer
 }
-
-
 
 //--------------------------------------------------------------
 void testApp::drawFile(){
-	//for(auto shapefile = shapefiles.begin(); shapefile != shapefiles.end(); shapefile++){
-	if(item_receiver >= 0 && ofGetElapsedTimef() - time_object_placed < 5.0){
-			float rot = -soundboxes[item_receiver]->getBoxRotation().y;
-			float loc = -soundboxes[item_receiver]->getBoxLocation().z;
-			cout << rot << endl;
-			shapefile->drawShapeFile(spin, rot, loc / cos(ofDegToRad(rot)));	
-	} else {
-		wait_for_file = true;
+	if(item_receiver >= 0 && ofGetElapsedTimef() - saved_time < 5.0){
+		float rot = -soundboxes[item_receiver]->getBoxRotation().y;
+		float loc = -soundboxes[item_receiver]->getBoxLocation().z;
+		shapefile->drawShapeFile(spin, rot, loc / cos(ofDegToRad(rot)));
+
+	} else if(item_receiver == -1 && ofGetElapsedTimef() - saved_time < 5.0) {
+		shapefile->drawShapeFile(spin, 0, 200);
 	}
-	//}
-	
+
+}
+
+//--------------------------------------------------------------
+void testApp::checkCorrect(){
+
+	//check target, color and shape.
+	XML.pushTag("TASK", task_tag);
+	int _tag_num = XML.addTag("Result");
+	if(item_receiver == random_questioner && shape == random_shape && shape_color == random_color){
+		//correct!
+		cout << "correct!" << endl;
+		sendToXML("Result", 1, _tag_num);
+
+	} else {
+		//wrong!
+		cout << "wrong!" << endl;
+		sendToXML("Result", 0, _tag_num);
+	}
+	XML.saveFile("mySettings.xml");
+	wait_for_file = false;
+	ask_for_file = true;
 }
 
 //--------------------------------------------------------------
 void testApp::getUDPMessages(){
-		target = -1;
+	target = -1;
 	// check for waiting messages
 	while(receiver.hasWaitingMessages()){
 		// get the next message
@@ -418,68 +503,133 @@ void testApp::getUDPMessages(){
 		receiver.getNextMessage(&message);
 
 		if(message.getAddress() == "object"){
-			
+			cout << "address checked" << endl;
 			shape_color = message.getArgAsString(0);
 			shape = message.getArgAsString(1);
-			time_object_placed = ofGetElapsedTimef();
+			//time_object_placed = ofGetElapsedTimef();
 			if(message.getNumArgs() == 2){
+				cout << "2 arguments received" << endl;
 				shapefile.reset(new ShapeFile(shape_color, shape));
 				//shapefiles.push_back(shapefile);
 				item_receiver = getSelected();
-			} else if(message.getNumArgs() == 3 && message.getArgAsInt32(2) <= soundboxes.size()){
+			} else if(message.getNumArgs() == 3){
+				cout << "3 arguments received" << endl;
 				target = message.getArgAsInt32(2);
 				shapefile.reset(new ShapeFile(shape_color, shape, target));
 				//shapefiles.push_back(shapefile);
-				
+
 				item_receiver = target;
+				cout << "item receiver: " << item_receiver << endl;
 			}
-		
-		wait_for_file = false;
-		file_received = true;
-		
-		
+
+			XML.pushTag("TASK", task_tag);
+			int _tag_num = XML.addTag("Received");
+			sendToXML("Received", shape_color + " " + shape, _tag_num);
+			//stop timer
+			stopTimer();
+
+			//check if the answer is correct
+			checkCorrect();
+
+			file_received = true;
+			message.clear();
+
 		}
 
-	/*	if(message.getAddress() == "Location"){
-			float mapped_value = ofMap(message.getArgAsFloat(0), 0, 1, -1, 1);
-			cout << mapped_value << endl;
-			box_rotation.set(0, -mapped_value*180, 0);
-			
+		/*	if(message.getAddress() == "Location"){
+		float mapped_value = ofMap(message.getArgAsFloat(0), 0, 1, -1, 1);
+		cout << mapped_value << endl;
+		box_rotation.set(0, -mapped_value*180, 0);
+
 
 		} else if(message.getAddress() == "Place" && message.getArgAsInt32(0) == 1){
-			addSoundBox();
+		addSoundBox();
 		} else if(message.getAddress() == "Remove" && message.getArgAsInt32(0) == 1){
-			removeSoundBox();
+		removeSoundBox();
 		}
 
 		//print out in console
 		string msg_string;
 		msg_string = message.getAddress();
 		msg_string += ": ";
-		
+
 		for(int i = 0; i < message.getNumArgs(); i++){
-			// get the argument type
-			msg_string += message.getArgTypeName(i);
-			msg_string += ":";
-			// display the argument - make sure we get the right type
-			if(message.getArgType(i) == OFXOSC_TYPE_INT32){
-				msg_string += ofToString(message.getArgAsInt32(i));
-			}
-			else if(message.getArgType(i) == OFXOSC_TYPE_FLOAT){
-				msg_string += ofToString(message.getArgAsFloat(i));
-			}
-			else if(message.getArgType(i) == OFXOSC_TYPE_STRING){
-				msg_string += message.getArgAsString(i);
-			}
-			else{
-				msg_string += "unknown";
-			}
-				
+		// get the argument type
+		msg_string += message.getArgTypeName(i);
+		msg_string += ":";
+		// display the argument - make sure we get the right type
+		if(message.getArgType(i) == OFXOSC_TYPE_INT32){
+		msg_string += ofToString(message.getArgAsInt32(i));
+		}
+		else if(message.getArgType(i) == OFXOSC_TYPE_FLOAT){
+		msg_string += ofToString(message.getArgAsFloat(i));
+		}
+		else if(message.getArgType(i) == OFXOSC_TYPE_STRING){
+		msg_string += message.getArgAsString(i);
+		}
+		else{
+		msg_string += "unknown";
+		}
+
 		}
 		cout << msg_string << endl;
 		*/
 	}
 
-//	cout << "shape: " << shape << " color: " << shape_color << " target: " << target << endl;
+	//	cout << "shape: " << shape << " color: " << shape_color << " target: " << target << endl;
 
+}
+
+//--------------------------------------------------------------
+void testApp::clearUDPMessages(){
+	while(receiver.hasWaitingMessages()){
+		// get the next message
+		ofxOscMessage message;
+		receiver.getNextMessage(&message);
+	}
+}
+
+//--------------------------------------------------------------
+void testApp::sendToXML(string tag, float result, int tag_num){
+
+	XML.setValue(tag, result, tag_num);
+	XML.popTag();
+}
+
+void testApp::sendToXML(string tag, string input, int tag_num){
+
+	XML.setValue(tag, input, tag_num);
+	XML.popTag();
+}
+
+//--------------------------------------------------------------
+void testApp::startTimer(){
+	saved_time = ofGetElapsedTimef();
+}
+
+//--------------------------------------------------------------
+void testApp::stopTimer(){
+	XML.pushTag("TASK", task_tag);
+	int _tag_num = XML.addTag("Time");
+	float _current_time = ofGetElapsedTimef();
+	float _task_time = _current_time - saved_time;
+	sendToXML("Time", _task_time, _tag_num);
+	cout << "task time: " << _task_time << "  saved_time: " << saved_time << "  time: " << _current_time << endl;
+}
+
+void testApp::startNewSession(){
+	ofResetElapsedTimeCounter();
+	session_tag = XML.addTag("SESSION");
+	XML.pushTag("SESSION", session_tag);
+	ask_for_file = true;
+	cout << "started session" << endl;
+}
+
+void testApp::endSession(){
+	int _tag_num = XML.addTag("SessionTime");
+	float _current_time = ofGetElapsedTimef();
+	sendToXML("SessionTime", _current_time, _tag_num);
+	XML.saveFile("mySettings.xml");
+	XML.popTag();
+	cout << "session ended" << endl;
 }
