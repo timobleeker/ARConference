@@ -68,8 +68,14 @@ class testApp : public ofBaseApp{
 		void removeSoundBox();
 		void positionSoundBox();
 		
+		void setupSession();
+
 		void startNewSession();
 		void endSession();
+
+		void visualCue();
+		void startAudioCue();
+		void endAudioCue();
 
 		void sendToXML(string tag, float result, int tag_num);
 		void sendToXML(string tag, string input, int tag_num);
@@ -106,6 +112,9 @@ class testApp : public ofBaseApp{
 		vector<string> shape_colors;
 		string shape;
 		string shape_color;
+		ofColor blue;
+		ofColor yellow;
+		ofColor red;
 
 		string asked_shape;
 		string asked_color;
@@ -138,5 +147,6 @@ class testApp : public ofBaseApp{
 		ofxXmlSettings XML;
 		int task_tag;
 		int session_tag;
+		int condition;
 		int iterations;
 };

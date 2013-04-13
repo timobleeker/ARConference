@@ -42,6 +42,10 @@ void testApp::setup(){
 	wait_for_file = false;;
 	file_received = false;
 	spin = 0;
+	blue.set(51,181,229);
+	yellow.set(255,187,51);
+	red.set(255,68,68);
+
 	shapes.push_back("circle");
 	shapes.push_back("square");
 	shapes.push_back("triangle");
@@ -60,9 +64,11 @@ void testApp::setup(){
 
 	sound_files.push_back("birds.wav");
 	sound_files.push_back("organ.wav");
+	sound_files.push_back("birds.wav");
 
 	video_files.push_back("me_talking.mov");
 	video_files.push_back("james.mov");
+	video_files.push_back("me_talking.mov");
 
 	//set up camera
 	cam.setPosition(ofVec3f(0,0,0));
@@ -72,6 +78,8 @@ void testApp::setup(){
 	//set up listening port for UDP messages
 	receiver.setup(PORT);
 
+	//create thee talking heads.
+	setupSession();
 }
 
 //--------------------------------------------------------------
@@ -106,7 +114,8 @@ void testApp::update(){
 
 		float y_rot = (*box)->getBoxRotation().y;
 		float z_loc = (*box)->getBoxLocation().z;
-		if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
+		//if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
+		if(pan > y_rot -7 && pan < y_rot + 7){	
 			cursor_material.setEmissiveColor(ofColor(51,181,229,255));
 			(*box)->setSelected(true);
 			selectSoundBox();
@@ -132,6 +141,9 @@ void testApp::draw(){
 	drawCursor();
 	ofRotateY(pan);
 	drawGrid();
+
+	if(condition == 1) visualCue();
+
 	//create all boxes
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
 
@@ -193,12 +205,24 @@ void testApp::keyPressed(int key){
 			}
 		}
 		break;
-	case 'i':
+	case 'u':
 		iterations = 5;
+		condition = 0;
+		startNewSession();
+		break;
+	case 'i':
+		iterations = 20;
+		condition = 0;
 		startNewSession();
 		break;
 	case 'o':
+		iterations = 5;
+		condition = 1;
+		startNewSession();
+		break;
+	case 'p':
 		iterations = 20;
+		condition = 1;
 		startNewSession();
 		break;
 	}
@@ -264,7 +288,7 @@ void testApp::addSoundBox(){
 
 	box->loadVideo(ofToDataPath(video_files[soundboxes.size()]));
 	box->loadSound(ofToDataPath(sound_files[soundboxes.size()]));
-	box->setVolume(1);
+	box->setVolume(0);
 	box->setMultiPlay(true);
 	box->updateSound(box_loc, box_vel);
 	box->play();
@@ -352,7 +376,8 @@ int testApp::getSelected(){
 		n++;
 		float y_rot = (*box)->getBoxRotation().y;
 		float z_loc = (*box)->getBoxLocation().z;
-		if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
+		//if(pan > y_rot && pan < y_rot && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
+		if(pan > y_rot - 7 && pan < y_rot + 7){
 			return n;
 		}
 	}
@@ -381,9 +406,9 @@ void testApp::rotateToDefault() {
 void testApp::setupTracker(){
 	handle = ISD_OpenTracker((Hwnd)NULL, 0, FALSE, FALSE );
 	if ( handle > 0 )
-		printf( "\n  Az El Rl \n" );
+		cout << "\n  Az El Rl \n";
 	else
-		printf( "Tracker not found. Press any key to exit" );
+		cout << "Tracker not found." << endl;
 }
 
 //--------------------------------------------------------------
@@ -443,11 +468,14 @@ void testApp::askFile(){
 			break;
 		}
 		cout << "random_questioner: " << random_questioner << "  random_shape: " << random_shape << "  random_color: " << random_color << endl;
-
+		
 		wait_for_file = true;
 		XML.pushTag("TASK", task_tag);
 		int _tag_num = XML.addTag("Asked");
 		sendToXML("Asked", random_color + " " + random_shape, _tag_num);
+
+		if(condition == 0) startAudioCue();
+
 	} else {
 		endSession();
 	}
@@ -617,7 +645,38 @@ void testApp::stopTimer(){
 	cout << "task time: " << _task_time << "  saved_time: " << saved_time << "  time: " << _current_time << endl;
 }
 
+//--------------------------------------------------------------
+void testApp::setupSession(){
+	std::vector<int> rotation; 
+	rotation.push_back(10);
+	rotation.push_back(80);
+	rotation.push_back(240);
+	//Comment this out when using UDP
+	//cout << "Enter a rotation (0-360): ";
+	//cin >> rotation;
+
+	for(int i = 0; i < rotation.size(); i++){
+	box_rotation.set(0, rotation[i], 0);
+	//-------------------------------
+	box_distance = 600;
+	box_loc.set(box_distance*sin(ofDegToRad(box_rotation.y)), 0, -box_distance*cos(ofDegToRad(box_rotation.y))); 
+	box_color.set(ofRandom(0,255), ofRandom(0,255), ofRandom(0,255));
+
+	SoundBox * box = new SoundBox(box_loc, box_rotation, box_color);
+
+	box->loadVideo(ofToDataPath(video_files[soundboxes.size()]));
+	box->loadSound(ofToDataPath(sound_files[soundboxes.size()]));
+	box->setVolume(0);
+	box->setMultiPlay(true);
+	box->updateSound(box_loc, box_vel);
+	box->play();
+	soundboxes.push_back(box);
+	}
+}
+
+//--------------------------------------------------------------
 void testApp::startNewSession(){
+
 	ofResetElapsedTimeCounter();
 	session_tag = XML.addTag("SESSION");
 	XML.pushTag("SESSION", session_tag);
@@ -625,11 +684,89 @@ void testApp::startNewSession(){
 	cout << "started session" << endl;
 }
 
+//--------------------------------------------------------------
 void testApp::endSession(){
+	condition = -1;
 	int _tag_num = XML.addTag("SessionTime");
 	float _current_time = ofGetElapsedTimef();
 	sendToXML("SessionTime", _current_time, _tag_num);
 	XML.saveFile("mySettings.xml");
 	XML.popTag();
 	cout << "session ended" << endl;
+}
+
+//--------------------------------------------------------------
+void testApp::visualCue(){
+	
+	ofMaterial cue_material;
+	cue_material.begin();
+	cue_material.setShininess(0);
+	
+	if(random_color == "blue"){
+		ofSetColor(blue);
+		cue_material.setEmissiveColor(blue);
+	} else if(random_color == "yellow"){
+		ofSetColor(yellow);
+		cue_material.setEmissiveColor(yellow);
+	} else if (random_color == "red"){
+		ofSetColor(red);
+		cue_material.setEmissiveColor(red);
+	}
+	
+	ofPushMatrix();
+
+	float rotY;
+	float rotX = 0.0;
+	float locZ;
+	float locY = 0.0;
+	int size;
+
+	if(random_questioner >= 0){
+	rotY = -soundboxes[random_questioner]->getBoxRotation().y;
+	locZ = -soundboxes[random_questioner]->getBoxLocation().z;
+	ofRotateY(rotY);
+	ofTranslate(0, 140,-(locZ / cos(ofDegToRad(rotY))));
+	size = 40;
+	} else {
+		rotY = -pan;
+		rotX = -90;
+		locZ = 40.0;
+		locY = -20;
+		size = 10;
+		ofRotateY(rotY);
+		ofTranslate(0,locY, -locZ);
+		ofRotateX(rotX);
+	}
+
+	
+	if(random_shape == "circle"){
+		ofCircle(0,-size/2,size/2);
+		
+	} else if(random_shape == "triangle"){ 
+		glBegin(GL_TRIANGLES);
+			glVertex2f(0,0);
+			glVertex2f(-size/2, -size);
+			glVertex2f(size/2, -size);
+		glEnd();
+	} else if (random_shape == "square"){
+		ofRect(-size/2,-40,size,size);
+	}
+	ofPopMatrix();
+	cue_material.end();
+
+}
+
+//--------------------------------------------------------------
+void testApp::startAudioCue(){
+	std::stringstream audio_cue_file; 
+	audio_cue_file << random_questioner << "_" << random_color << "_" << random_shape;
+	soundboxes[random_questioner]->loadSound(ofToDataPath(audio_cue_file.str() + ".wav"));
+	soundboxes[random_questioner]->loadVideo(ofToDataPath(audio_cue_file.str() + ".mov"));
+	soundboxes[random_questioner]->setVolume(1);
+	soundboxes[random_questioner]->play();
+	cout << audio_cue_file.str() << endl;
+}
+
+void testApp::endAudioCue(){
+
 }
