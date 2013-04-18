@@ -17,7 +17,7 @@ testApp::testApp() : _random(125042)
 }
 
 void testApp::setup(){	
-
+	
 	//set up tracker
 	setupTracker();
 
@@ -41,6 +41,7 @@ void testApp::setup(){
 	ask_for_file = false;
 	wait_for_file = false;;
 	file_received = false;
+	cue_is_visual = false;
 	spin = 0;
 	blue.set(51,181,229);
 	yellow.set(255,187,51);
@@ -76,9 +77,9 @@ void testApp::setup(){
 	listener.updateListener(listener_position, listener_velocity, listener_forward, listener_up);
 
 	//set up listening port for UDP messages
-	receiver.setup(PORT);
-
-	//create thee talking heads.
+	receiver.setup(PORT_IN);
+	sender.setup(HOST, PORT_OUT);
+	//create the talking heads.
 	setupSession();
 }
 
@@ -128,6 +129,8 @@ void testApp::update(){
 
 	if(soundboxes.size() > 0)
 		soundboxes[0]->update();
+
+	sendUDPMessages();
 }
 
 //--------------------------------------------------------------
@@ -523,42 +526,48 @@ void testApp::checkCorrect(){
 
 //--------------------------------------------------------------
 void testApp::getUDPMessages(){
+	//by default, reset the target to -1 (=the environment)
 	target = -1;
+	
 	// check for waiting messages
 	while(receiver.hasWaitingMessages()){
-		// get the next message
+		
+		// get the next waiting message
 		ofxOscMessage message;
 		receiver.getNextMessage(&message);
 
+		//check if the message has the address we're expecting
 		if(message.getAddress() == "object"){
-			cout << "address checked" << endl;
+			
+			//retrieve the arguments 0 and 1.
 			shape_color = message.getArgAsString(0);
 			shape = message.getArgAsString(1);
-			//time_object_placed = ofGetElapsedTimef();
+			
 			if(message.getNumArgs() == 2){
-				cout << "2 arguments received" << endl;
+				
 				shapefile.reset(new ShapeFile(shape_color, shape));
-				//shapefiles.push_back(shapefile);
 				item_receiver = getSelected();
+
 			} else if(message.getNumArgs() == 3){
-				cout << "3 arguments received" << endl;
+				
+				//in case we also receive the third argument, set the incoming integer as the target
 				target = message.getArgAsInt32(2);
 				shapefile.reset(new ShapeFile(shape_color, shape, target));
-				//shapefiles.push_back(shapefile);
-
 				item_receiver = target;
-				cout << "item receiver: " << item_receiver << endl;
-			}
 
+			}
+			//push into the TASK tag and set the data of the received element up for writing to XML
 			XML.pushTag("TASK", task_tag);
 			int _tag_num = XML.addTag("Received");
 			sendToXML("Received", shape_color + " " + shape, _tag_num);
+			
 			//stop timer
 			stopTimer();
 
 			//check if the answer is correct
 			checkCorrect();
-
+			
+			//end the listening and clear the message
 			file_received = true;
 			message.clear();
 
@@ -611,10 +620,24 @@ void testApp::getUDPMessages(){
 //--------------------------------------------------------------
 void testApp::clearUDPMessages(){
 	while(receiver.hasWaitingMessages()){
-		// get the next message
+		//get the message as if we are using it, but don't do anything with it. This clears the queue.
 		ofxOscMessage message;
 		receiver.getNextMessage(&message);
 	}
+}
+
+//--------------------------------------------------------------
+void testApp::sendUDPMessages(){
+	ofxOscMessage m;
+	m.setAddress("rotation");
+	m.addFloatArg(pan);
+	if(cue_is_visual){
+		m.addStringArg(random_color);
+		m.addStringArg(random_shape);
+		m.addIntArg(random_questioner);
+		cue_is_visual = false;
+	}
+	sender.sendMessage(m);
 }
 
 //--------------------------------------------------------------
@@ -624,6 +647,7 @@ void testApp::sendToXML(string tag, float result, int tag_num){
 	XML.popTag();
 }
 
+//--------------------------------------------------------------
 void testApp::sendToXML(string tag, string input, int tag_num){
 
 	XML.setValue(tag, input, tag_num);
@@ -754,6 +778,8 @@ void testApp::visualCue(){
 	ofPopMatrix();
 	cue_material.end();
 
+	cue_is_visual = true;
+
 }
 
 //--------------------------------------------------------------
@@ -767,6 +793,7 @@ void testApp::startAudioCue(){
 	cout << audio_cue_file.str() << endl;
 }
 
+//--------------------------------------------------------------
 void testApp::endAudioCue(){
 
 }

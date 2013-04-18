@@ -16,7 +16,9 @@
 
 //Definitions-------------------------------------------------------------------
 #define TAU 6.2831853
-#define PORT 8001
+#define PORT_IN 8001
+#define PORT_OUT 8002
+#define HOST "192.168.43.23"
 #define WASD_LEFT 97
 #define WASD_RIGHT 100
 #define WASD_UP 119
@@ -63,6 +65,7 @@ class testApp : public ofBaseApp{
 		void setupTracker();
 		void updateTracker();
 		void getUDPMessages();
+		void sendUDPMessages();
 		void clearUDPMessages();
 		void addSoundBox();
 		void removeSoundBox();
@@ -98,6 +101,8 @@ class testApp : public ofBaseApp{
 
 		//udp
 		ofxOscReceiver receiver;
+		ofxOscSender sender;
+		bool cue_is_visual;
 		
 		//vector with the sound boxes
 		vector<SoundBox*> soundboxes;
