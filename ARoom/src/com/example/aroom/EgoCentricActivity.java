@@ -97,14 +97,16 @@ public class EgoCentricActivity extends Activity {
 				break;
 			case DragEvent.ACTION_DROP:
 				View view = (View) event.getLocalState();
-				// ImageView dropTarget = (ImageView) v;
+				ImageView drop_target = (ImageView) v;
 				ImageView dropped = (ImageView) view;
 				String idname = (String) dropped.getTag();
 				Toast.makeText(getApplicationContext(), idname,
 						Toast.LENGTH_SHORT).show();
+				
+				String send_target = (String) drop_target.getTag();
 				String[] split = idname.split(":");
 
-				connection.send(split[0], split[1], 0);
+				connection.send(split[0], split[1], Integer.parseInt(send_target));
 				break;
 			case DragEvent.ACTION_DRAG_ENDED:
 

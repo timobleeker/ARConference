@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 public class ExoCentricActivity extends Activity {
 
-	private final static String IP_ADDRESS = "192.168.43.224";
+	private final static String IP_ADDRESS = "10.32.11.206";
 
 	private ImageView bluesquare, redsquare, yellowsquare, bluecircle,
 			redcircle, yellowcircle, bluetriangle, redtriangle, yellowtriangle,
