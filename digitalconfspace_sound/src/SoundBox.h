@@ -19,6 +19,7 @@ class SoundBox: public ofFmodSoundPlayer {
 	SoundBox();
 	SoundBox(ofVec3f box_location, ofVec3f box_rotation, ofColor box_color);
 
+	
 	static void initializeFmod();
 	static void closeFmod();
 	bool loadSound(string fileName, bool stream = false);

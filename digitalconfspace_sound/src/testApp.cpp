@@ -17,7 +17,7 @@ testApp::testApp() : _random(125042)
 }
 
 void testApp::setup(){	
-	
+
 	//set up tracker
 	setupTracker();
 
@@ -28,6 +28,7 @@ void testApp::setup(){
 	ofEnableAlphaBlending();
 	ofSetSmoothLighting(true);
 	ofEnableLighting();
+	ofEnableSmoothing();
 
 	user_height = 180;
 	box_distance = 400;
@@ -115,22 +116,31 @@ void testApp::update(){
 
 		float y_rot = (*box)->getBoxRotation().y;
 		float z_loc = (*box)->getBoxLocation().z;
-		//if(pan > y_rot - 7 && pan < y_rot + 7 && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
-		if(pan > y_rot -7 && pan < y_rot + 7){	
-			cursor_material.setEmissiveColor(ofColor(51,181,229,255));
+		
+		if(pan > y_rot -10 && pan < y_rot + 10){	
+			cursor_material.setEmissiveColor(ofColor(blue));
 			(*box)->setSelected(true);
 			selectSoundBox();
 			break;
 		} else { 
-			cursor_material.setEmissiveColor(ofColor(255,68,68,255));
+			cursor_material.setEmissiveColor(ofColor(red));
 			(*box)->setSelected(false);
 		}
+		
+	}
+
+	//wrap pan around
+	if(pan > 360) {
+		pan = 0;
+	} else if(pan < 0) { 
+		pan = 360;
 	}
 
 	if(soundboxes.size() > 0)
 		soundboxes[0]->update();
 
 	sendUDPMessages();
+	cue_is_visual = false;
 }
 
 //--------------------------------------------------------------
@@ -337,17 +347,17 @@ void testApp::positionSoundBox(){
 void testApp::drawGrid(){
 
 	//draw a grid on the floor
-	ofSetColor(255,255,255);
+	
 	for(int i=-2000;i<2200;i+=100)
 	{
 		ofPushMatrix();
 		ofRotate(-90., 1., 0., 0.);
 		ofTranslate(0,0,-user_height);
-
 		ofLine(-2000,i,2000,i);
 		ofLine(i,-2000,i,2000);
 		ofPopMatrix();
 	}
+
 }
 
 //--------------------------------------------------------------
@@ -434,6 +444,7 @@ void testApp::updateTracker(){
 //--------------------------------------------------------------
 void testApp::askFile(){
 	ask_for_file = false;
+	cue_is_visual = true;
 
 	if(iterations > 0){
 		iterations--;
@@ -522,16 +533,15 @@ void testApp::checkCorrect(){
 	XML.saveFile("mySettings.xml");
 	wait_for_file = false;
 	ask_for_file = true;
+	
 }
 
 //--------------------------------------------------------------
 void testApp::getUDPMessages(){
 	//by default, reset the target to -1 (=the environment)
 	target = -1;
-	
 	// check for waiting messages
 	while(receiver.hasWaitingMessages()){
-		
 		// get the next waiting message
 		ofxOscMessage message;
 		receiver.getNextMessage(&message);
@@ -632,12 +642,14 @@ void testApp::sendUDPMessages(){
 	m.setAddress("rotation");
 	m.addFloatArg(pan);
 	if(cue_is_visual){
+		m.setAddress("object");
+		m.addIntArg(random_questioner);
 		m.addStringArg(random_color);
 		m.addStringArg(random_shape);
-		m.addIntArg(random_questioner);
-		cue_is_visual = false;
+			cout << "Sent" << endl;
 	}
 	sender.sendMessage(m);
+
 }
 
 //--------------------------------------------------------------
@@ -668,7 +680,7 @@ void testApp::stopTimer(){
 	sendToXML("Time", _task_time, _tag_num);
 	cout << "task time: " << _task_time << "  saved_time: " << saved_time << "  time: " << _current_time << endl;
 }
-
+ 
 //--------------------------------------------------------------
 void testApp::setupSession(){
 	std::vector<int> rotation; 
@@ -777,8 +789,6 @@ void testApp::visualCue(){
 	}
 	ofPopMatrix();
 	cue_material.end();
-
-	cue_is_visual = true;
 
 }
 
