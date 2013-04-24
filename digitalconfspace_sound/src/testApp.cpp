@@ -509,7 +509,7 @@ void testApp::drawFile(){
 		shapefile->drawShapeFile(spin, rot, loc / cos(ofDegToRad(rot)));
 
 	} else if(item_receiver == -1 && ofGetElapsedTimef() - saved_time < 5.0) {
-		shapefile->drawShapeFile(spin, 0, 200);
+		shapefile->drawShapeFile(spin, -pan, 200);
 	}
 
 }

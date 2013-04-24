@@ -18,7 +18,7 @@
 #define TAU 6.2831853
 #define PORT_IN 8001
 #define PORT_OUT 8002
-#define HOST "192.168.43.23"
+#define HOST "10.32.9.203"
 #define WASD_LEFT 97
 #define WASD_RIGHT 100
 #define WASD_UP 119
