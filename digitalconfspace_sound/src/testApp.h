@@ -8,6 +8,7 @@
 #include "ofxOsc.h"
 #include "ofxXmlSettings.h"
 #include "isense.h"
+#include "ofxSimpleSerial.h"
 
 //Include Class Headers---------------------------------------------------------
 #include "SoundBox.h"
@@ -46,7 +47,7 @@ class testApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		
+		void retry_audio();
 		
 		int user_height;
 		int box_distance;
@@ -92,6 +93,11 @@ class testApp : public ofBaseApp{
 		float pan;
 		float tilt;
 		float roll;
+		float total_pan;
+		float total_tilt;
+		float total_roll;
+		ofVec3f current_forward;
+		ofVec3f current_up;
 		void rotateToDefault();
 
 		//light
@@ -147,6 +153,8 @@ class testApp : public ofBaseApp{
 
 		float saved_time;
 		float time_object_placed;
+		int retries;
+		bool retry;
 
 		//XML saving
 		ofxXmlSettings XML;
@@ -154,4 +162,11 @@ class testApp : public ofBaseApp{
 		int session_tag;
 		int condition;
 		int iterations;
+
+		// arduino tracker
+		ofxSimpleSerial serial;
+		string tracking_message;
+
+		float tilt_offset, roll_offset, pan_offset;
+		void onNewMessage(string &message);
 };

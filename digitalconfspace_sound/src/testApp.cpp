@@ -20,6 +20,9 @@ void testApp::setup(){
 
 	//set up tracker
 	setupTracker();
+	tilt_offset = 0;
+	roll_offset = 0;
+	pan_offset = 0;
 
 	//translate so the center of the screen is 0,0 before doing anything else
 	ofTranslate(ofGetScreenWidth()/2, ofGetScreenHeight()/2, 0);
@@ -36,6 +39,9 @@ void testApp::setup(){
 	pan = 0;
 	tilt = 0;
 	roll = 0;
+	total_pan = pan;
+	total_tilt = tilt;
+	total_roll = roll;
 	ofBackground(0);
 	light_color.set(255,255,255);
 	moving = false;
@@ -59,19 +65,23 @@ void testApp::setup(){
 	pointLight.setDiffuseColor(light_color);
 	pointLight.setSpecularColor(light_color);
 
-	listener_velocity.set(1, 1, 1);
+	listener_velocity.set(0, 0, 0);
 	listener_up.set(0, 1, 0);
 	listener_forward.set(0, 0, 1);
+	current_forward.set(0,0,0);
+	current_up.set(0,0,0);
 	listener_position.set(0, 0, 0);
 
-	sound_files.push_back("birds.wav");
-	sound_files.push_back("organ.wav");
-	sound_files.push_back("birds.wav");
+	sound_files.push_back("0_red_square.wav");
+	sound_files.push_back("0_red_square.wav");
+	sound_files.push_back("0_red_square.wav");
 
-	video_files.push_back("me_talking.mov");
-	video_files.push_back("james.mov");
-	video_files.push_back("me_talking.mov");
+	video_files.push_back("0_red_square.mov");
+	video_files.push_back("0_red_square.mov");
+	video_files.push_back("0_red_square.mov");
 
+	retries = 0;
+	retry = false;
 	//set up camera
 	cam.setPosition(ofVec3f(0,0,0));
 
@@ -88,7 +98,6 @@ void testApp::setup(){
 void testApp::update(){
 
 	spin += .2;
-	updateTracker();
 
 
 	if(ask_for_file) askFile();
@@ -99,8 +108,10 @@ void testApp::update(){
 		clearUDPMessages();
 	}
 
-	listener_forward.set(-sin(ofDegToRad(pan)), 0, cos(ofDegToRad(pan)));
-	listener_up.set(0, cos(ofDegToRad(pan)), sin(ofDegToRad(pan)));
+	//listener_forward.set(-sin(ofDegToRad(pan)), 0, cos(ofDegToRad(pan)));
+	//listener_up.set(0, cos(ofDegToRad(tilt)), sin(ofDegToRad(tilt)));
+	listener_forward.set(current_forward);
+	listener_up.set(current_up);
 	listener.updateListener(listener_position, listener_velocity, listener_forward, listener_up);
 
 	if (moving){
@@ -111,9 +122,13 @@ void testApp::update(){
 	}
 
 	for(auto box = soundboxes.begin(); box != soundboxes.end(); box++){
-		if(!(*box)->getIsPlaying())
+	/*	if(!(*box)->getIsPlaying() && retry){
 			(*box)->play();
-
+			retries++;
+			retry = false;
+			cout << "retry" << endl;
+		}*/
+		
 		float y_rot = (*box)->getBoxRotation().y;
 		float z_loc = (*box)->getBoxLocation().z;
 		
@@ -130,11 +145,11 @@ void testApp::update(){
 	}
 
 	//wrap pan around
-	if(pan > 360) {
+	/*if(pan > 360) {
 		pan = 0;
 	} else if(pan < 0) { 
 		pan = 360;
-	}
+	}*/
 
 	if(soundboxes.size() > 0)
 		soundboxes[0]->update();
@@ -145,7 +160,6 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
-
 
 	cam.begin();
 	pointLight.enable();
@@ -175,9 +189,11 @@ void testApp::keyPressed(int key){
 	{
 	case WASD_LEFT:
 		pan--;
+		cout << listener_forward.x << " " <<  listener_forward.z << endl;
 		break;
 	case WASD_RIGHT:
 		pan++;
+		cout << -sin(ofDegToRad(pan)) << " " <<  cos(ofDegToRad(pan)) << endl;
 		break;
 	case WASD_UP:
 		tilt++;
@@ -197,9 +213,7 @@ void testApp::keyPressed(int key){
 			addSoundBox();
 		break;
 	case OF_KEY_DOWN:
-		//rotateToDefault();
-		startTimer();
-		askFile();
+		rotateToDefault();
 		break;
 	case OF_KEY_RIGHT:
 		if (soundboxes.size() > 0)
@@ -237,6 +251,9 @@ void testApp::keyPressed(int key){
 		iterations = 20;
 		condition = 1;
 		startNewSession();
+		break;
+	case 'l':
+		retry_audio();
 		break;
 	}
 
@@ -390,11 +407,11 @@ int testApp::getSelected(){
 		float y_rot = (*box)->getBoxRotation().y;
 		float z_loc = (*box)->getBoxLocation().z;
 		//if(pan > y_rot && pan < y_rot && cursor_z < z_loc / cos(ofDegToRad(y_rot)) + 50 && cursor_z > z_loc / cos(ofDegToRad(y_rot)) - 50){
-		if(pan > y_rot - 7 && pan < y_rot + 7){
+		if(pan > y_rot - 10 && pan < y_rot + 10){
 			return n;
 		}
 	}
-	return -1;
+	//return -1;
 }
 
 //--------------------------------------------------------------
@@ -406,38 +423,78 @@ void testApp::selectSoundBox(){
 //--------------------------------------------------------------
 void testApp::rotateToDefault() {
 
-	ofRotateY(-pan);
-	ofRotateZ(-roll);
-	ofRotateX(-tilt);
 
-	tilt = 0;
-	roll = 0;
-	pan = 0;
+	tilt_offset += -tilt;
+	roll_offset += -roll;
+	pan_offset += -pan;
+
 }
 
 //--------------------------------------------------------------
 void testApp::setupTracker(){
-	handle = ISD_OpenTracker((Hwnd)NULL, 0, FALSE, FALSE );
+/*	handle = ISD_OpenTracker((Hwnd)NULL, 0, FALSE, FALSE );
 	if ( handle > 0 )
 		cout << "\n  Az El Rl \n";
 	else
-		cout << "Tracker not found." << endl;
+		cout << "Tracker not found." << endl; */
+
+	serial.setup("\\\\.\\COM10", 57600);
+	serial.startContinuesRead();
+	ofAddListener(serial.NEW_MESSAGE,this,&testApp::onNewMessage);
+
 }
 
 //--------------------------------------------------------------
-void testApp::updateTracker(){
-	ISD_TRACKING_DATA_TYPE    data;
+void testApp::onNewMessage(string & message)
+{
 
-	if ( handle > 0 ) {
-		ISD_GetTrackingData( handle, &data );
-		//printf( "%7.2f %7.2f %7.2f  ",
-		pan = data.Station[0].Euler[0];
-		tilt = -data.Station[0].Euler[1];
-		roll = data.Station[0].Euler[2];
-		//ISD_GetCommInfo( handle, &tracker );
-		//printf( "%5.2f Kb/s %d Rec/s \r",
-		//	tracker.KBitsPerSec, tracker.RecordsPerSec );
-		fflush(0);
+	static float prev_pan;
+	static float prev_tilt;
+	static float prev_roll;
+
+    vector<string> initial = ofSplitString(message, "=");
+    if (initial.size()==2)
+    {
+        
+    vector<string> input = ofSplitString(initial[1], ",");
+
+        if (input.size() == 3){
+ 
+
+            pan = ofToFloat(input[0])+ 180 + pan_offset;
+            tilt = ofToFloat(input[1]) + tilt_offset;
+            roll = -ofToFloat(input[2]) - 90 + roll_offset;
+			//cout << "pan: " << pan << " pan_offset: " << pan_offset << " tilt: " << tilt << " tilt_offset: " << tilt_offset << " roll: " << roll << " roll_offset: " << roll_offset << endl;
+			
+			total_pan += abs(pan - prev_pan);
+			total_tilt += abs(tilt - prev_tilt);
+			total_roll += abs(roll - prev_roll);
+
+			cout << "pan: " << pan << " pan_c: " << total_pan << endl;
+			prev_pan = pan;
+			prev_tilt = tilt;
+			prev_roll = roll;
+			
+			ofVec3f new_forward(0,0,1);
+			current_forward = new_forward.rotate(tilt, pan, roll);
+			ofVec3f new_up(0,1,0);
+			current_up = new_up.rotate(tilt, pan, roll);
+
+        }   else {
+            cout << "message size: " <<input.size() << endl;
+        }
+    }
+    
+}
+
+//--------------------------------------------------------------
+void testApp::retry_audio(){
+	int _random_questioner = random_questioner;
+	if(_random_questioner == -1) _random_questioner = 0;
+	if(!soundboxes[_random_questioner]->getIsPlaying()){
+			soundboxes[_random_questioner]->play();
+			retries++;
+			cout << "retry" << endl;
 	}
 }
 
@@ -486,7 +543,10 @@ void testApp::askFile(){
 		wait_for_file = true;
 		XML.pushTag("TASK", task_tag);
 		int _tag_num = XML.addTag("Asked");
-		sendToXML("Asked", random_color + " " + random_shape, _tag_num);
+		ostringstream convert;
+		convert << random_questioner;
+		string target_string = convert.str();
+		sendToXML("Asked", target_string + "_" + random_color + "_" + random_shape, _tag_num);
 
 		if(condition == 0) startAudioCue();
 
@@ -509,7 +569,7 @@ void testApp::drawFile(){
 		shapefile->drawShapeFile(spin, rot, loc / cos(ofDegToRad(rot)));
 
 	} else if(item_receiver == -1 && ofGetElapsedTimef() - saved_time < 5.0) {
-		shapefile->drawShapeFile(spin, -pan, 200);
+		shapefile->drawShapeFile(spin, -pan, 250);
 	}
 
 }
@@ -520,6 +580,7 @@ void testApp::checkCorrect(){
 	//check target, color and shape.
 	XML.pushTag("TASK", task_tag);
 	int _tag_num = XML.addTag("Result");
+	cout << item_receiver << " : " << random_questioner << "   " << shape << " : " << random_shape << "   " << shape_color << " : " << random_color << endl;
 	if(item_receiver == random_questioner && shape == random_shape && shape_color == random_color){
 		//correct!
 		cout << "correct!" << endl;
@@ -530,10 +591,33 @@ void testApp::checkCorrect(){
 		cout << "wrong!" << endl;
 		sendToXML("Result", 0, _tag_num);
 	}
+	
+	XML.pushTag("TASK", task_tag);
+	int _retry_tag = XML.addTag("Retries");
+	sendToXML("Retries", retries, _retry_tag);
 	XML.saveFile("mySettings.xml");
+
+	XML.pushTag("TASK", task_tag);
+	int _total_pan = XML.addTag("Pan");
+	sendToXML("Pan", total_pan, _total_pan);
+
+	XML.pushTag("TASK", task_tag);
+	int _total_tilt = XML.addTag("Tilt");
+	sendToXML("Tilt", total_tilt, _total_tilt);
+	
+	XML.pushTag("TASK", task_tag);
+	int _total_roll = XML.addTag("Roll");
+	sendToXML("Roll", total_roll, _total_roll);
+
+	XML.saveFile("mySettings.xml");
+
 	wait_for_file = false;
 	ask_for_file = true;
-	
+	retries = 0;
+	total_pan = 0.0f;
+	total_tilt = 0.0f;
+	total_roll = 0.0f;
+
 }
 
 //--------------------------------------------------------------
@@ -549,27 +633,27 @@ void testApp::getUDPMessages(){
 		//check if the message has the address we're expecting
 		if(message.getAddress() == "object"){
 			
-			//retrieve the arguments 0 and 1.
+			//retrieve the arguments
 			shape_color = message.getArgAsString(0);
 			shape = message.getArgAsString(1);
-			
-			if(message.getNumArgs() == 2){
+							
+			shapefile.reset(new ShapeFile(shape_color, shape));
 				
-				shapefile.reset(new ShapeFile(shape_color, shape));
+			target = message.getArgAsInt32(2);
+			shapefile.reset(new ShapeFile(shape_color, shape, target));
+			if(target == -2){
 				item_receiver = getSelected();
-
-			} else if(message.getNumArgs() == 3){
-				
-				//in case we also receive the third argument, set the incoming integer as the target
-				target = message.getArgAsInt32(2);
-				shapefile.reset(new ShapeFile(shape_color, shape, target));
+			} else{
 				item_receiver = target;
-
 			}
+			
 			//push into the TASK tag and set the data of the received element up for writing to XML
 			XML.pushTag("TASK", task_tag);
 			int _tag_num = XML.addTag("Received");
-			sendToXML("Received", shape_color + " " + shape, _tag_num);
+			ostringstream convert;
+			convert << item_receiver;
+			string target_string = convert.str();
+			sendToXML("Received", target_string + "_" + shape_color + " " + shape, _tag_num);
 			
 			//stop timer
 			stopTimer();
@@ -694,7 +778,6 @@ void testApp::setupSession(){
 	for(int i = 0; i < rotation.size(); i++){
 	box_rotation.set(0, rotation[i], 0);
 	//-------------------------------
-	box_distance = 600;
 	box_loc.set(box_distance*sin(ofDegToRad(box_rotation.y)), 0, -box_distance*cos(ofDegToRad(box_rotation.y))); 
 	box_color.set(ofRandom(0,255), ofRandom(0,255), ofRandom(0,255));
 
@@ -794,12 +877,16 @@ void testApp::visualCue(){
 
 //--------------------------------------------------------------
 void testApp::startAudioCue(){
+	int _random_questioner = random_questioner;
 	std::stringstream audio_cue_file; 
-	audio_cue_file << random_questioner << "_" << random_color << "_" << random_shape;
-	soundboxes[random_questioner]->loadSound(ofToDataPath(audio_cue_file.str() + ".wav"));
-	soundboxes[random_questioner]->loadVideo(ofToDataPath(audio_cue_file.str() + ".mov"));
-	soundboxes[random_questioner]->setVolume(1);
-	soundboxes[random_questioner]->play();
+	//audio_cue_file << random_questioner << "_" << random_color << "_" << random_shape;
+	audio_cue_file << 0 << "_" << random_color << "_" << random_shape; //change this back to ^!!!!
+	if(_random_questioner == -1) _random_questioner = 0;
+	soundboxes[_random_questioner]->loadSound(ofToDataPath(audio_cue_file.str() + ".wav"));
+	soundboxes[_random_questioner]->loadVideo(ofToDataPath(audio_cue_file.str() + ".mov"));
+	
+	soundboxes[_random_questioner]->play();
+	soundboxes[_random_questioner]->setVolume(1);
 	cout << audio_cue_file.str() << endl;
 }
 

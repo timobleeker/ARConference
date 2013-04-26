@@ -32,29 +32,13 @@ SoundBox::SoundBox(ofVec3f box_location, ofVec3f box_rotation, ofColor box_color
 	sound_position.x = _box_location.x;
 	sound_position.y = _box_location.y;
 	sound_position.z = _box_location.z;
+
 	sound_velocity.x = 0;
 	sound_velocity.y = 0;
 	sound_velocity.z = 0;
-
-	//player.loadMovie("me_talking.mov");
-	//player.play();
-
-	/*grayPixels = new unsigned char [w*h];
-
-	for(int i = 0; i < w*h; i++){
-		grayPixels[i] = (unsigned char)(ofRandomuf() *255);
-	}
-	testTex.loadData(grayPixels, w, h, GL_LUMINANCE); */
 }
 
 void SoundBox::drawSoundBox(){
-		
-		/*for (int i = 0; i < w; i++){
-			for (int j = 0; j < h; j++){ 
-				grayPixels[j*w+i] = (unsigned char)(ofRandomuf() * 255);
-			}
-		}	
-		testTex.loadData(grayPixels, w,h, GL_LUMINANCE); */
 
 		box_material.setSpecularColor(ofColor(51,181,229));
 		box_material.setShininess(4); 
@@ -124,13 +108,14 @@ void SoundBox::loadVideo(string fileName){
 	video_tex.allocate(w,h,GL_RGB);
 	video_tex = player.getTextureReference();
 	video_tex.bind();
+	player.setLoopState(OF_LOOP_NONE);
 	player.play();
 }
 
 bool SoundBox::loadSound(string fileName, bool stream)
 {
     result = FMOD_System_CreateSound(sys, ofToDataPath(fileName).c_str(), FMOD_3D, NULL, &sound);
-    result = FMOD_Sound_Set3DMinMaxDistance(sound, 1.f, 5000.0f);
+    result = FMOD_Sound_Set3DMinMaxDistance(sound, 1.0f, 5000.0f);
 
     if (result != FMOD_OK){
         bLoadedOk = false;
@@ -150,7 +135,8 @@ void SoundBox::play(){
     FMOD_Channel_GetFrequency(channel, &internalFreq);
     FMOD_Channel_SetVolume(channel,volume);
 	//if(!player.isPlaying())
-	//	player.play();
+	player.firstFrame();
+	player.play();
 }
 
 void SoundBox::stop(){
@@ -160,9 +146,9 @@ void SoundBox::stop(){
 void SoundBox::updateSound( ofVec3f box_location, ofVec3f box_velocity )
 {
 
-		sound_position.x = box_location.x/100;
-		sound_position.y = box_location.y/100;
-		sound_position.z = box_location.z/100;
+		sound_position.x = box_location.x/300;
+		sound_position.y = box_location.y;
+		sound_position.z = box_location.z/300;
 		sound_velocity.x = box_velocity.x;
 		sound_velocity.y = box_velocity.y;
 		sound_velocity.z = box_velocity.z;
