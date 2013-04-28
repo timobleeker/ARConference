@@ -1,0 +1,280 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/egocentric_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center" >
+
+    <ImageView
+        android:id="@+id/toparea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/topellipse"
+        android:tag="-2" />
+
+    <ImageView
+        android:id="@+id/bottomarea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/bottomellipse"
+        android:tag="-1" />
+
+    <ImageView
+        android:id="@+id/bluesquare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/bluecircle"
+        android:layout_marginLeft="24dp"
+        android:layout_toRightOf="@+id/bluecircle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/blue_square"
+        android:tag="blue:square" />
+
+    <ImageView
+        android:id="@+id/bluetriangle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/bluesquare"
+        android:layout_marginLeft="23dp"
+        android:layout_toRightOf="@+id/bluesquare"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/blue_triangle"
+        android:tag="blue:triangle" />
+
+    <ImageView
+        android:id="@+id/redsquare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/bluetriangle"
+        android:layout_marginLeft="30dp"
+        android:layout_toRightOf="@+id/redcircle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/red_square"
+        android:tag="red:square" />
+
+    <ImageView
+        android:id="@+id/redtriangle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/redsquare"
+        android:layout_marginLeft="30dp"
+        android:layout_toRightOf="@+id/redsquare"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/red_triangle"
+        android:tag="red:triangle" />
+
+    <ImageView
+        android:id="@+id/bluecircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/bottomarea"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="136dp"
+        android:layout_marginLeft="59dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/blue_circle"
+        android:tag="blue:circle" />
+
+    <ImageView
+        android:id="@+id/yellowsquare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/yellowcircle"
+        android:layout_marginLeft="29dp"
+        android:layout_toRightOf="@+id/yellowcircle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/yellow_square"
+        android:tag="yellow:square" />
+
+    <ImageView
+        android:id="@+id/yellowtriangle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/yellowsquare"
+        android:layout_marginLeft="22dp"
+        android:layout_toRightOf="@+id/yellowsquare"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/yellow_triangle"
+        android:tag="yellow:triangle" />
+
+    <ImageView
+        android:id="@+id/redcircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/redsquare"
+        android:layout_marginLeft="60dp"
+        android:layout_toRightOf="@+id/bluetriangle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/red_circle"
+        android:tag="red:circle" />
+
+    <ImageView
+        android:id="@+id/yellowcircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/redtriangle"
+        android:layout_marginLeft="62dp"
+        android:layout_toRightOf="@+id/redtriangle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/yellow_circle"
+        android:tag="yellow:circle" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_weight="1" >
+
+        <ImageView
+            android:id="@+id/person2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/person1"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@+id/person1"
+            android:src="@drawable/nath" />
+
+        <ImageView
+            android:id="@+id/person3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/person2"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@+id/person2"
+            android:src="@drawable/james" />
+
+        <ImageView
+            android:id="@+id/person5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/person3"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@+id/person4"
+            android:src="@drawable/tuomas" />
+
+        <ImageView
+            android:id="@+id/person4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/person5"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@+id/person3"
+            android:src="@drawable/ronan" />
+
+        <ImageView
+            android:id="@+id/person1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="318dp"
+            android:layout_marginTop="31dp"
+            android:src="@drawable/timo" />
+
+        <ImageView
+            android:id="@+id/smallbluesquare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_blue_square"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/smallbluetriangle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_blue_triangle"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/smallbluecircle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_blue_circle"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/smallyellowtriangle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_yellow_triangle"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/smallyellowcircle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_yellow_circle"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/smallredsquare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_red_square"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/smallredtriangle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_red_triangle"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/smallredcircle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_red_circle"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/smallyellowsquare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/person1"
+            android:layout_alignTop="@+id/person1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_yellow_square"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+</RelativeLayout>

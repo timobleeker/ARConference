@@ -1,0 +1,369 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center_vertical" >
+
+    <ImageView
+        android:id="@+id/bluesquare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/bluecircle"
+        android:layout_marginLeft="24dp"
+        android:layout_toRightOf="@+id/bluecircle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/blue_square"
+        android:tag="blue:square" />
+
+    <ImageView
+        android:id="@+id/bluetriangle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/bluesquare"
+        android:layout_marginLeft="23dp"
+        android:layout_toRightOf="@+id/bluesquare"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/blue_triangle"
+        android:tag="blue:triangle" />
+
+    <ImageView
+        android:id="@+id/redsquare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/bluetriangle"
+        android:layout_marginLeft="30dp"
+        android:layout_toRightOf="@+id/redcircle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/red_square"
+        android:tag="red:square" />
+
+    <ImageView
+        android:id="@+id/redtriangle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/redsquare"
+        android:layout_marginLeft="30dp"
+        android:layout_toRightOf="@+id/redsquare"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/red_triangle"
+        android:tag="red:triangle" />
+
+    <ImageView
+        android:id="@+id/yellowsquare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/yellowcircle"
+        android:layout_marginLeft="29dp"
+        android:layout_toRightOf="@+id/yellowcircle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/yellow_square"
+        android:tag="yellow:square" />
+
+    <ImageView
+        android:id="@+id/yellowtriangle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/yellowsquare"
+        android:layout_marginLeft="22dp"
+        android:layout_toRightOf="@+id/yellowsquare"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/yellow_triangle"
+        android:tag="yellow:triangle" />
+
+    <ImageView
+        android:id="@+id/redcircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/redsquare"
+        android:layout_marginLeft="60dp"
+        android:layout_toRightOf="@+id/bluetriangle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/red_circle"
+        android:tag="red:circle" />
+
+    <ImageView
+        android:id="@+id/yellowcircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/redtriangle"
+        android:layout_marginLeft="62dp"
+        android:layout_toRightOf="@+id/redtriangle"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/yellow_circle"
+        android:tag="yellow:circle" />
+
+    <ImageView
+        android:id="@+id/bluecircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="26dp"
+        android:layout_marginLeft="60dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/blue_circle"
+        android:tag="blue:circle" />
+
+    <ImageView
+        android:id="@+id/radar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="23dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/radar" />
+
+    <ImageView
+        android:id="@+id/radarcenter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/radar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="159dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/radar_center"
+        android:tag="-1" />
+
+    <ImageView
+        android:id="@+id/viewangle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/radar"
+        android:layout_alignTop="@+id/radar"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/viewangle" />
+
+    <ImageView
+        android:id="@+id/person1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radarcenter"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="34dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/timo"
+        android:tag="0" />
+
+    <ImageView
+        android:id="@+id/person2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radarcenter"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="34dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/nath"
+        android:tag="1" />
+
+    <ImageView
+        android:id="@+id/person3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radarcenter"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="34dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/james"
+        android:tag="2" />
+    
+        <ImageView
+        android:id="@+id/person4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radarcenter"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="34dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/ronan"
+        android:tag="3" />
+        
+            <ImageView
+        android:id="@+id/person5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radarcenter"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="34dp"
+        android:contentDescription="@string/bluesquare"
+        android:src="@drawable/tuomas"
+        android:tag="4" />
+
+   <LinearLayout
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_alignBottom="@+id/radar"
+       android:layout_alignParentLeft="true"
+       android:layout_alignParentRight="true"
+       android:layout_alignTop="@+id/radar" >
+   
+    <ImageView
+        android:id="@+id/smallyellowsquare"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingBottom="0dp"
+            android:paddingTop="0dp"
+        android:src="@drawable/small_yellow_square"
+        android:visibility="invisible" />
+</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/radar" >
+
+        <ImageView
+            android:id="@+id/smallbluecircle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:contentDescription="@string/bluesquare"
+            android:paddingBottom="0dp"
+            android:paddingTop="0dp"
+            android:src="@drawable/small_blue_circle"
+            android:visibility="invisible" />
+
+    </LinearLayout>
+     <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/radar" >   
+        <ImageView
+        android:id="@+id/smallyellowcircle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:contentDescription="@string/bluesquare"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+        android:src="@drawable/small_yellow_circle"
+        android:visibility="invisible" />
+</LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/radar" >        
+            <ImageView
+        android:id="@+id/smallyellowtriangle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:contentDescription="@string/bluesquare"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+        android:src="@drawable/small_yellow_triangle"
+        android:visibility="invisible" />
+            </LinearLayout>
+            <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/radar" >    
+                <ImageView
+        android:id="@+id/smallredsquare"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:contentDescription="@string/bluesquare"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+        android:src="@drawable/small_red_square"
+        android:visibility="invisible" />
+                </LinearLayout>
+        <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/radar" >
+        <ImageView
+        android:id="@+id/smallredcircle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:contentDescription="@string/bluesquare"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+        android:src="@drawable/small_red_circle"
+        android:visibility="invisible" />
+        </LinearLayout>
+           <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/radar" > 
+            <ImageView
+        android:id="@+id/smallredtriangle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:contentDescription="@string/bluesquare"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+        android:src="@drawable/small_red_triangle"
+        android:visibility="invisible" />
+            </LinearLayout>
+                <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/radar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/radar" >
+                <ImageView
+        android:id="@+id/smallbluesquare"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:contentDescription="@string/bluesquare"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+        android:src="@drawable/small_blue_square"
+        android:visibility="invisible" />
+</LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/radar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/radar" >
+
+            <ImageView
+                android:id="@+id/smallbluetriangle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:contentDescription="@string/bluesquare"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
+                android:src="@drawable/small_blue_triangle"
+                android:visibility="invisible" />
+
+        </LinearLayout>
+
+</RelativeLayout>

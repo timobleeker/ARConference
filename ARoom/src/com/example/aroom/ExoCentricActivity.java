@@ -19,20 +19,21 @@ import android.widget.Toast;
 
 public class ExoCentricActivity extends Activity {
 
-	private final static String IP_ADDRESS = "10.32.11.206";
+	private static String IP_ADDRESS = "10.32.11.206";
 
 	private ImageView bluesquare, redsquare, yellowsquare, bluecircle,
 			redcircle, yellowcircle, bluetriangle, redtriangle, yellowtriangle,
-			radarcenter, person_1, person_2, person_3, cue;
+			radarcenter, person_1, person_2, person_3, person_4, person_5, cue;
 
 	OSCConnection connection = new OSCConnection();
 	private DataPackage data_in = new DataPackage();
-	private boolean visual_cue = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		
+		IP_ADDRESS = getIntent().getExtras().getString("ip");
+		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -66,6 +67,10 @@ public class ExoCentricActivity extends Activity {
 		person_2.setOnDragListener(new DragListener());
 		person_3 = (ImageView) findViewById(R.id.person3);
 		person_3.setOnDragListener(new DragListener());
+		person_4 = (ImageView) findViewById(R.id.person4);
+		person_4.setOnDragListener(new DragListener());
+		person_5 = (ImageView) findViewById(R.id.person5);
+		person_5.setOnDragListener(new DragListener());
 
 		radarcenter = (ImageView) findViewById(R.id.radarcenter);
 		radarcenter.setOnDragListener(new DragListener());
@@ -95,12 +100,11 @@ public class ExoCentricActivity extends Activity {
 
 					String shape_color = data_in.getShapeColor();
 					String shape = data_in.getShape();
-					if (cue != null && cue.getVisibility() == View.VISIBLE) {
-						cue.setVisibility(View.INVISIBLE);
-					}
 					showVisualCue(shape_color, shape);
 				}
-
+				if (cue != null && cue.getVisibility() == View.VISIBLE) {
+					cue.setVisibility(View.INVISIBLE);
+				}
 			}
 		};
 
@@ -130,7 +134,7 @@ public class ExoCentricActivity extends Activity {
 
 	void setRotations(float rot, int target) {
 		// rotations: [0] for target -1, [1] for target 0, etc.
-		int[] rotations = { 0, 10, 80, 240 };
+		int[] rotations = { 0, 10, 80, 160, 240, 320};
 
 		float y_translation_1 = -300
 				* (float) Math.cos(Math.toRadians(rot - rotations[1]));
@@ -144,6 +148,14 @@ public class ExoCentricActivity extends Activity {
 				* (float) Math.cos(Math.toRadians(rot - rotations[3]));
 		float x_translation_3 = -300
 				* (float) Math.sin(Math.toRadians(rot - rotations[3]));
+		float y_translation_4 = -300
+				* (float) Math.cos(Math.toRadians(rot - rotations[4]));
+		float x_translation_4 = -300
+				* (float) Math.sin(Math.toRadians(rot - rotations[4]));
+		float y_translation_5 = -300
+				* (float) Math.cos(Math.toRadians(rot - rotations[5]));
+		float x_translation_5 = -300
+				* (float) Math.sin(Math.toRadians(rot - rotations[5]));
 
 		person_1.setTranslationY(y_translation_1);
 		person_1.setTranslationX(x_translation_1);
@@ -151,6 +163,10 @@ public class ExoCentricActivity extends Activity {
 		person_2.setTranslationX(x_translation_2);
 		person_3.setTranslationY(y_translation_3);
 		person_3.setTranslationX(x_translation_3);
+		person_4.setTranslationY(y_translation_4);
+		person_4.setTranslationX(x_translation_4);
+		person_5.setTranslationY(y_translation_5);
+		person_5.setTranslationX(x_translation_5);
 
 		if (cue != null) {
 			float y_translation = -100;
