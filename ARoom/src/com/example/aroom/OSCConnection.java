@@ -40,7 +40,7 @@ public class OSCConnection {
 			if (split != null && split.length == 2) {
 				server = split[0];
 				portout = Integer.valueOf(split[1]);
-				Log.i("osc", "used IP");
+				Log.i("osc", server);
 			} else {
 				server = serverAddress;
 				portout = 8001;
