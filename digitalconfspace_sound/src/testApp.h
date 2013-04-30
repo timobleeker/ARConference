@@ -169,4 +169,10 @@ class testApp : public ofBaseApp{
 
 		float tilt_offset, roll_offset, pan_offset;
 		void onNewMessage(string &message);
+
+		//ping or boop
+		ofSoundPlayer result_tone;
+
+		//floor mat
+		ofMaterial floor_mat;
 };

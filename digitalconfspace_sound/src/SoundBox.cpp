@@ -39,7 +39,7 @@ SoundBox::SoundBox(ofVec3f box_location, ofVec3f box_rotation, ofColor box_color
 }
 
 void SoundBox::drawSoundBox(){
-
+		glNormal3f(0,0,1);
 		box_material.setSpecularColor(ofColor(51,181,229));
 		box_material.setShininess(4); 
 		box_material.begin();
@@ -59,10 +59,10 @@ void SoundBox::drawSoundBox(){
 		
 		//ofBox(40);
 		//ofSphere(20);
-		ofSetColor(255,0,0);
-		ofSetLineWidth(5);
-		ofLine(ofPoint(0,0,0), ofPoint(0,-180,0));
-		ofSetLineWidth(1);
+		//ofSetColor(255,0,0);
+		//ofSetLineWidth(5);
+		//ofLine(ofPoint(0,0,0), ofPoint(0,-180,0));
+		//ofSetLineWidth(1);
 		ofPopMatrix();
 		box_material.end();
 		
@@ -102,8 +102,8 @@ void SoundBox::initializeFmod(){
 void SoundBox::loadVideo(string fileName){
 	player.loadMovie(fileName);
 
-	w = 110;
-	h = 160;
+	w = 100;
+	h = 175;
 
 	video_tex.allocate(w,h,GL_RGB);
 	video_tex = player.getTextureReference();
@@ -146,9 +146,9 @@ void SoundBox::stop(){
 void SoundBox::updateSound( ofVec3f box_location, ofVec3f box_velocity )
 {
 
-		sound_position.x = box_location.x/300;
+		sound_position.x = box_location.x/200;
 		sound_position.y = box_location.y;
-		sound_position.z = box_location.z/300;
+		sound_position.z = box_location.z/200;
 		sound_velocity.x = box_velocity.x;
 		sound_velocity.y = box_velocity.y;
 		sound_velocity.z = box_velocity.z;

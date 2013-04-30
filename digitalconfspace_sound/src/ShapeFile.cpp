@@ -37,7 +37,7 @@ void ShapeFile::drawShapeFile(float spin, float rot, float loc){
 	shapeMaterial.begin();
 	shapeMaterial.setShininess(4);
 	ofSetColor(_shape_color);
-
+	
 	if(_shape == "circle"){
 		ofSphere(size/2);
 	} else if(_shape == "triangle"){ 
@@ -63,6 +63,7 @@ void ShapeFile::drawShapeFile(float spin, float rot, float loc){
 	} else if (_shape == "square"){
 		ofBox(size);
 	}
+	glNormal3f(0.0, 0.0, 1.0);
 	shapeMaterial.end();
 
 	ofPopMatrix();

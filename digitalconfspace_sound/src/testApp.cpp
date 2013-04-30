@@ -73,12 +73,16 @@ void testApp::setup(){
 	listener_position.set(0, 0, 0);
 
 	sound_files.push_back("0_red_square.wav");
-	sound_files.push_back("0_red_square.wav");
-	sound_files.push_back("0_red_square.wav");
+	sound_files.push_back("1_red_square.wav");
+	sound_files.push_back("2_red_square.wav");
+	sound_files.push_back("3_red_square.wav");
+	sound_files.push_back("4_red_square.wav");
 
 	video_files.push_back("0_red_square.mov");
-	video_files.push_back("0_red_square.mov");
-	video_files.push_back("0_red_square.mov");
+	video_files.push_back("1_red_square.mov");
+	video_files.push_back("2_red_square.mov");
+	video_files.push_back("3_red_square.mov");
+	video_files.push_back("4_red_square.mov");
 
 	retries = 0;
 	retry = false;
@@ -165,9 +169,23 @@ void testApp::draw(){
 	pointLight.enable();
 	ofRotateX(tilt);
 	ofRotateZ(roll);
-	drawCursor();
+	//drawCursor();
 	ofRotateY(pan);
 	drawGrid();
+
+	ofPushMatrix();
+	ofTranslate(0,-user_height+10, 0);
+	ofRotateX(90);
+	
+	
+	ofDisableLighting();
+	//floor_mat.setSpecularColor(ofColor(153,204,0));
+
+	ofSetColor(153,204,0,100);
+	ofCircle(0,0,1200);
+	ofEnableLighting();
+
+	ofPopMatrix();
 
 	if(condition == 1) visualCue();
 
@@ -189,11 +207,11 @@ void testApp::keyPressed(int key){
 	{
 	case WASD_LEFT:
 		pan--;
-		cout << listener_forward.x << " " <<  listener_forward.z << endl;
+		//cout << listener_forward.x << " " <<  listener_forward.z << endl;
 		break;
 	case WASD_RIGHT:
 		pan++;
-		cout << -sin(ofDegToRad(pan)) << " " <<  cos(ofDegToRad(pan)) << endl;
+		//cout << -sin(ofDegToRad(pan)) << " " <<  cos(ofDegToRad(pan)) << endl;
 		break;
 	case WASD_UP:
 		tilt++;
@@ -432,13 +450,8 @@ void testApp::rotateToDefault() {
 
 //--------------------------------------------------------------
 void testApp::setupTracker(){
-/*	handle = ISD_OpenTracker((Hwnd)NULL, 0, FALSE, FALSE );
-	if ( handle > 0 )
-		cout << "\n  Az El Rl \n";
-	else
-		cout << "Tracker not found." << endl; */
 
-	serial.setup("\\\\.\\COM10", 57600);
+	serial.setup("COM4", 57600);
 	serial.startContinuesRead();
 	ofAddListener(serial.NEW_MESSAGE,this,&testApp::onNewMessage);
 
@@ -461,9 +474,9 @@ void testApp::onNewMessage(string & message)
         if (input.size() == 3){
  
 
-            pan = ofToFloat(input[0])+ 180 + pan_offset;
-            tilt = ofToFloat(input[1]) + tilt_offset;
-            roll = -ofToFloat(input[2]) - 90 + roll_offset;
+            pan = ofToFloat(input[0]) + 90 + pan_offset;
+            roll = -ofToFloat(input[1]) + roll_offset;
+            tilt = -ofToFloat(input[2]) - 90 + tilt_offset;
 			//cout << "pan: " << pan << " pan_offset: " << pan_offset << " tilt: " << tilt << " tilt_offset: " << tilt_offset << " roll: " << roll << " roll_offset: " << roll_offset << endl;
 			
 			total_pan += abs(pan - prev_pan);
@@ -476,9 +489,9 @@ void testApp::onNewMessage(string & message)
 			prev_roll = roll;
 			
 			ofVec3f new_forward(0,0,1);
-			current_forward = new_forward.rotate(tilt, pan, roll);
+			current_forward = new_forward.rotate(tilt, -pan, roll);
 			ofVec3f new_up(0,1,0);
-			current_up = new_up.rotate(tilt, pan, roll);
+			current_up = new_up.rotate(tilt, -pan, roll);
 
         }   else {
             cout << "message size: " <<input.size() << endl;
@@ -490,7 +503,7 @@ void testApp::onNewMessage(string & message)
 //--------------------------------------------------------------
 void testApp::retry_audio(){
 	int _random_questioner = random_questioner;
-	if(_random_questioner == -1) _random_questioner = 0;
+	if(_random_questioner == -1) _random_questioner = 1;
 	if(!soundboxes[_random_questioner]->getIsPlaying()){
 			soundboxes[_random_questioner]->play();
 			retries++;
@@ -584,11 +597,17 @@ void testApp::checkCorrect(){
 	if(item_receiver == random_questioner && shape == random_shape && shape_color == random_color){
 		//correct!
 		cout << "correct!" << endl;
+		result_tone.loadSound("correct.wav");
+		result_tone.setVolume(.2);
+		result_tone.play();
 		sendToXML("Result", 1, _tag_num);
 
 	} else {
 		//wrong!
 		cout << "wrong!" << endl;
+		result_tone.loadSound("wrong.wav");
+		result_tone.setVolume(.2);
+		result_tone.play();
 		sendToXML("Result", 0, _tag_num);
 	}
 	
@@ -665,6 +684,8 @@ void testApp::getUDPMessages(){
 			file_received = true;
 			message.clear();
 
+		} else if(message.getAddress() == "retry"){
+			retry_audio();	
 		}
 
 		/*	if(message.getAddress() == "Location"){
@@ -770,10 +791,9 @@ void testApp::setupSession(){
 	std::vector<int> rotation; 
 	rotation.push_back(10);
 	rotation.push_back(80);
+	rotation.push_back(160);
 	rotation.push_back(240);
-	//Comment this out when using UDP
-	//cout << "Enter a rotation (0-360): ";
-	//cin >> rotation;
+	rotation.push_back(320);
 
 	for(int i = 0; i < rotation.size(); i++){
 	box_rotation.set(0, rotation[i], 0);
@@ -877,11 +897,12 @@ void testApp::visualCue(){
 
 //--------------------------------------------------------------
 void testApp::startAudioCue(){
+	cue_is_visual = false;
 	int _random_questioner = random_questioner;
 	std::stringstream audio_cue_file; 
 	//audio_cue_file << random_questioner << "_" << random_color << "_" << random_shape;
-	audio_cue_file << 0 << "_" << random_color << "_" << random_shape; //change this back to ^!!!!
-	if(_random_questioner == -1) _random_questioner = 0;
+	audio_cue_file << random_questioner << "_" << random_color << "_" << random_shape; //change this back to ^!!!!
+	if(_random_questioner == -1) _random_questioner = 1;
 	soundboxes[_random_questioner]->loadSound(ofToDataPath(audio_cue_file.str() + ".wav"));
 	soundboxes[_random_questioner]->loadVideo(ofToDataPath(audio_cue_file.str() + ".mov"));
 	
