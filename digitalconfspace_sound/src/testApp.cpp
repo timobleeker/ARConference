@@ -903,7 +903,7 @@ void testApp::startAudioCue(){
 	//audio_cue_file << random_questioner << "_" << random_color << "_" << random_shape;
 	audio_cue_file << random_questioner << "_" << random_color << "_" << random_shape; //change this back to ^!!!!
 	if(_random_questioner == -1) _random_questioner = 1;
-	soundboxes[_random_questioner]->loadSound(o/fToDataPath(audio_cue_file.str() + ".wav"));
+	soundboxes[_random_questioner]->loadSound(ofToDataPath(audio_cue_file.str() + ".wav"));
 	soundboxes[_random_questioner]->loadVideo(ofToDataPath(audio_cue_file.str() + ".mov"));
 	
 	soundboxes[_random_questioner]->play();
